@@ -1,6 +1,6 @@
 <?php
 
-//■Array Slide Library Ver2.0■//
+//■Array Slide Library Ver2.1■//
 //
 //●概要
 // * array_slide関数 *
@@ -12,6 +12,9 @@
 //第4引数の「search target with order」オプションをTrueに設定した場合、
 //第2引数に指定された値で「キー」に関係なく「番目」をもとに検索します。
 //
+//
+//◆Ver2.1
+//・オブジェクトにも対応できるようにメソッド、プロセスの順序を変更
 //
 //◆Ver2.0
 //・第1引数を参照渡しに変更/返り値を変更
@@ -63,7 +66,7 @@ function array_slide(&$array,$key,$amount,$search_target_with_order=false) {
 	
 	//引数が正しいかどうか判定
 	if (!is_array($array) || !is_integer($amount) || !is_bool($search_target_with_order)) return false;
-	
+
 	//キーを失わないように次元を上げ、連想配列でない配列を作る
 	$cnt=0;
 	foreach ($array as $_key => $value) {
@@ -91,7 +94,7 @@ function array_slide(&$array,$key,$amount,$search_target_with_order=false) {
 	
 	//ターゲットが見つからなかったときはFalseを返す
 	if (is_null($target)) return false;
-	
+
 	//個数をカウント
 	$count = count($parent);
 	
@@ -115,6 +118,8 @@ function array_slide(&$array,$key,$amount,$search_target_with_order=false) {
 			array_splice($parent,$new_pos+1,0,array($target));
 			//後に重複する部分を後ろから削除するため一時的に反転
 			$parent = array_reverse($parent);
+			//キー番号を振り直す
+			array_values($parent);
 			break;
 			
 		//－
@@ -123,6 +128,18 @@ function array_slide(&$array,$key,$amount,$search_target_with_order=false) {
 			
 	}
 	
+	//重複する要素を削除し、実際にずらした配列を得る
+	//(オブジェクトにも対応できるようにarray_uniqueは使わない)
+	$haystack = array();
+	$count++; //最初より1つ増えている
+	for ($cnt=0;$cnt<$count;$cnt++) {
+		if (in_array($parent[$cnt],$haystack)) unset($parent[$cnt]);
+		else $haystack[] = $parent[$cnt];
+	}
+	
+	//一時的に反転させていた場合のみもとに戻す
+	if ($amount > 0) $parent = array_reverse($parent);
+	
 	//上げた次元をもとに戻す
 	foreach ($parent as $child) {
 		foreach ($child as $_key => $value) {
@@ -130,13 +147,7 @@ function array_slide(&$array,$key,$amount,$search_target_with_order=false) {
 		}
 	}
 	
-	//重複する要素を削除し、実際にずらした配列を得る
-	$new_arr = array_unique($new_arr);
-	
-	//一時的に反転させていた場合のみもとに戻す
-	if ($amount > 0) $new_arr = array_reverse($new_arr);
-	
-	//完成した配列を渡す
+	//配列を渡す
 	$array = $new_arr;
 	
 	return true;
