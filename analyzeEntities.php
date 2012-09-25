@@ -184,7 +184,7 @@ function analyzeEntities($text,$entities) {
 						break;
 					}
 				}
-				if (!$matched) $replace_str = "<a href=\"{$entity->expanded_url}\">{$entity->display_url}</a>";
+				if (!$matched) $replace_str = "<br><a href=\"{$entity->expanded_url}\">{$entity->display_url}</a><br>";
 				$text = mb_substr($text,0,$pos+$pos_lag).$replace_str.mb_substr($text,$pos+$pos_lag+$len);
 				$pos_lag += mb_strlen($replace_str) - $len;
 				break;
@@ -203,7 +203,7 @@ function analyzeEntities($text,$entities) {
 			
 				/* クリエイティブ(画像等)を置換するフォーマット */
 				
-				$replace_str = "<a href=\"{$entitiy->media_url}:medium\"><img src=\"{$entity->media_url}:thumb\"></a>"; //この行を変更
+				$replace_str = "<br><a href=\"{$entitiy->media_url}:medium\"><img src=\"{$entity->media_url}:thumb\"></a><br>"; //この行を変更
 				
 				$text = mb_substr($text,0,$pos+$pos_lag).$replace_str.mb_substr($text,$pos+$pos_lag+$len);
 				$pos_lag += mb_strlen($replace_str) - $len;
