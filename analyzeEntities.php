@@ -6,6 +6,10 @@
 //replace_str変数をご自身の開発されているアプリケーションに合わせて設定してください。
 //(いちいちeval関数を使ってると処理が重くなるので)
 //
+//・Ver2.1
+//Ver2.1の不具合を修正
+//置換の方法を間違えていた
+//
 //・Ver2.0
 //別に分けていたライブラリ組み込み
 //Ver1.1の不具合を修正
@@ -178,8 +182,9 @@ function analyzeEntities($text,$entities) {
 				//このブロックを変更
 				$matched = false;
 				foreach ($url_patterns as $pattern) {
-					if (preg_match($pattern[0],$entity->expanded_url)) {
-						$replace_str = "<br><a href=\"{$entity->expanded_url}\">$pattern[1]</a><br>";
+					$img = preg_replace($pattern[0],$pattern[1],$entity->expanded_url,1,$count);
+					if ($count>0) {
+						$replace_str = "<br><a href=\"{$entity->expanded_url}\">{$img}</a><br>";
 						$matched = true;
 						break;
 					}
