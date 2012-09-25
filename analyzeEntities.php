@@ -179,12 +179,12 @@ function analyzeEntities($text,$entities) {
 				$matched = false;
 				foreach ($url_patterns as $pattern) {
 					if (preg_match($pattern[0],$entity->expanded_url)) {
-						$replace_str = "<a href=\"{$entity->expanded_url}\">$pattern[1]</a>";
+						$replace_str = "<br><a href=\"{$entity->expanded_url}\">$pattern[1]</a><br>";
 						$matched = true;
 						break;
 					}
 				}
-				if (!$matched) $replace_str = "<br><a href=\"{$entity->expanded_url}\">{$entity->display_url}</a><br>";
+				if (!$matched) $replace_str = "<a href=\"{$entity->expanded_url}\">{$entity->display_url}</a>";
 				$text = mb_substr($text,0,$pos+$pos_lag).$replace_str.mb_substr($text,$pos+$pos_lag+$len);
 				$pos_lag += mb_strlen($replace_str) - $len;
 				break;
