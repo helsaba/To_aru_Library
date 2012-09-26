@@ -9,6 +9,12 @@
 //
 //※ライブラリというより自分用化してきた気もしますが、非常に便利なのでｒｙ
 //
+
+//via.me用に設定必須
+define(VIA_ME_APP_KEY,"");
+
+//・Ver3.2
+//via.meに対応
 //
 //・Ver3.1.1
 //media_urlのバグを修正
@@ -319,12 +325,22 @@ class analyzeEntitiesClass {
 		
 			$img_thumb = 'http://photozou.jp/p/thumb/'.$matches[1];
 			$img_raw = 'http://photozou.jp/p/img/'.$matches[1];
-			
-		// ついっぷる フォト
+		
+		// ついっぷるフォト
 		} elseif (preg_match('/http:\/\/p[.]twipple[.]jp\/([\w]+)/',$url,$matches)) {
 			
 			$img_thumb = 'http://p.twpl.jp/show/thumb/'.$matches[1];
 			$img_raw = 'http://p.twpl.jp/show/large/'.$matches[1];
+			
+		// via.me
+		} elseif (preg_match('/http:\/\/via[.]me\/-(\w+)/',$url,$matches)) {
+			
+			$request_url = 'http://api.via.me/v1/posts/'.$matches[1]."?client_id=".VIA_ME_APP_KEY;
+			$res = json_decode(@file_get_contents($request_url));
+			if (!is_null($res->response)) { 
+				$img_thumb = (string)$res->response->post->thumb_url;
+				$img_raw = (string)$res->response->post->media_url;
+			}
 		
 		//その他直接表示の画像
 		} elseif (preg_match('/http:\/\/.+?\.(jpg|png|gif|jpeg)/ui',$url,$matches)) {
