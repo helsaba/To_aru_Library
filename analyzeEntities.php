@@ -169,9 +169,8 @@ class analyzeEntitiesClass {
 				
 					/* メンションを置換するフォーマット */
 					
-				$replace_str = "<a href=\"person.php?guid=ON&person={$entity->screen_name}\">@{$entity->screen_name}</a>"; //この行を変更
-					
-				$text = mb_substr($text,0,$pos+$pos_lag).$replace_str.mb_substr($text,$pos+$pos_lag+$len);
+					$replace_str = "<a href=\"person.php?guid=ON&person={$entity->screen_name}\">@{$entity->screen_name}</a>"; //この行を変更
+					$text = mb_substr($text,0,$pos+$pos_lag).$replace_str.mb_substr($text,$pos+$pos_lag+$len);
 					$pos_lag += mb_strlen($replace_str) - $len;
 					break;
 					
