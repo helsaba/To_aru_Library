@@ -1,6 +1,6 @@
 <?php
 
-//■Analyze Entities Library Ver3.1■//
+//■Analyze Entities Library Ver3.1.1■//
 //
 //ツイートのエンティティ情報をもとに置換したりリンクを振ったり出来ます。
 //replace_str変数をご自身の開発されているアプリケーションに合わせて設定してください。
@@ -8,6 +8,10 @@
 //
 //
 //※ライブラリというより自分用化してきた気もしますが、非常に便利なのでｒｙ
+//
+//
+//・Ver3.1.1
+//media_urlのバグを修正
 //
 //
 //・Ver3.1
@@ -199,7 +203,7 @@ class analyzeEntitiesClass {
 					
 					//////変更ブロックここから
 					if (is_null(self::getUID())) $raw_url = $entity->media_url;
-					else $ral_url = "http://web.fileseek.net/getimg.cgi?guid=ON&u=".rawurlencode($raw_url);
+					else $raw_url = "http://web.fileseek.net/getimg.cgi?guid=ON&u=".rawurlencode($entity->media_url);
 					$replace_str = "<br><a href=\"{$raw_url}\"><img src=\"{$entity->media_url}:thumb\"></a><br>";
 					//////変更ブロックここまで
 					
