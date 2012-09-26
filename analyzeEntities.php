@@ -1,6 +1,6 @@
 <?php
 
-//■Analyze Entities Library Ver3.1.1■//
+//■Analyze Entities Library Ver3.2.1■//
 //
 //ツイートのエンティティ情報をもとに置換したりリンクを振ったり出来ます。
 //replace_str変数をご自身の開発されているアプリケーションに合わせて設定してください。
@@ -13,6 +13,9 @@
 //via.me用に設定必須
 define(VIA_ME_APP_KEY,"");
 
+//・Ver3.2.1
+//<br>の置換タイミングに関するバグを修正
+//
 //・Ver3.2
 //via.meに対応
 //
@@ -138,11 +141,12 @@ class analyzeEntitiesClass {
 			
 		}
 		
-		//改行コードを<br>に変換
-		$text = preg_replace("/\n/","<br>",$text);
-		
-		//エンティティ情報が空の場合はそのままテキストを返す
-		if (!$new_entities) return $text;
+		//エンティティ情報が空の場合は改行変換のみで返す
+		if (!$new_entities) {
+			//改行コードを<br>に変換
+			$text = preg_replace("/\n/","<br>",$text);
+			return $text;
+		}
 		
 		//ソート処理
 		array_multisort($sort_arr,$new_entities);
@@ -220,6 +224,9 @@ class analyzeEntitiesClass {
 			}
 			
 		}
+		
+		//改行コードを<br>に変換
+		$text = preg_replace("/\n/","<br>",$text);
 		
 		//処理したテキストを返す
 		return $text;
