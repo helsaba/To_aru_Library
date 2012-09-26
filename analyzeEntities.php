@@ -1,6 +1,6 @@
 <?php
 
-//■Analyze Entities Library Ver3.0■//
+//■Analyze Entities Library Ver3.1■//
 //
 //ツイートのエンティティ情報をもとに置換したりリンクを振ったり出来ます。
 //replace_str変数をご自身の開発されているアプリケーションに合わせて設定してください。
@@ -9,6 +9,10 @@
 //
 //※ライブラリというより自分用化してきた気もしますが、非常に便利なのでｒｙ
 //
+//
+//・Ver3.1
+//media_urlを修正
+//ツイートURL処理と改行変換処理を移入
 //
 //・Ver3.0
 //重複しそうな関数が増えてきたのでクラス化
@@ -124,6 +128,9 @@ class analyzeEntitiesClass {
 			
 		}
 		
+		//改行コードを<br>に変換
+		$text = preg_replace("/\n/","<br>",$text);
+		
 		//エンティティ情報が空の場合はそのままテキストを返す
 		if (!$new_entities) return $text;
 		
@@ -166,6 +173,8 @@ class analyzeEntitiesClass {
 					$replace_str = "<br><a href=\"http://web.fileseek.net/getimg.cgi?guid=ON&u=".rawurlencode($details['raw'])."\"><img src=\"{$details['thumb']}\"></a><br>";
 					elseif (!is_null($details['thumb']))
 					$replace_str = "<br><a href=\"{$entity->expanded_url}\"><img src=\"{$details['thumb']}\"></a><br>";
+					elseif (preg_match("#http://twitter\.com/([A-Za-z0-9_]{1,15})/status(es)?/(\d+)/?#",$entity->expanded_url))
+					$replace_str = "<a href=\"showTweet.php?guid=ON&id={$matches[3]}\" style=\"color:blue;\">{$matches[1]}のツイート</a>";
 					else
 					$replace_str = "<a href=\"{$entity->expanded_url}\">{$entity->display_url}</a>";
 					//////変更ブロックここまで
@@ -188,7 +197,12 @@ class analyzeEntitiesClass {
 				
 					/* クリエイティブ(画像等)を置換するフォーマット */
 					
-					$replace_str = "<br><a href=\"{$entity->large}:medium\"><img src=\"{$entity->media_url}:thumb\"></a><br>"; //この行を変更
+					//////変更ブロックここから
+					if (is_null(self::getUID())) $raw_url = $entity->media_url;
+					else $ral_url = "http://web.fileseek.net/getimg.cgi?guid=ON&u=".rawurlencode($raw_url);
+					$replace_str = "<br><a href=\"{$raw_url}\"><img src=\"{$entity->media_url}:thumb\"></a><br>";
+					//////変更ブロックここまで
+					
 					$text = mb_substr($text,0,$pos+$pos_lag).$replace_str.mb_substr($text,$pos+$pos_lag+$len);
 					$pos_lag += mb_strlen($replace_str) - $len;
 					break;
