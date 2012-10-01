@@ -17,15 +17,13 @@
 <dt style="margin:10px;font-size:120%;">概要</dt>
 <dd>長いツイートを最大で140字毎に、適当な部分で分割して配列で返す</dd>
 <dt style="margin:10px;font-size:120%;">関数の仕様</dt>
-<dd>array <b>explodeTweet</b> ( string <i>$str</i> [, string <i>$prefix</i> [,  string <i>$suffix</i> ]]] )</dd>
+<dd>array <b>explodeTweet</b> ( string <i>$str</i> )</dd>
 <dt style="margin:10px;font-size:120%;">詳細</dt>
 <dd>
 ツイート本文を容易に分割することが出来ます。<br>
 140字毎にスクリーンネームやURL、英文節を壊さないように区切って分割します。<br>
 全てのURLはt.coに短縮されるため、20文字として扱われます。<br>
-先頭にリプライヘッダがある場合、分割された全ての本文部分にそれを付加します。<br>
-本文部分にPrefixやSuffixを指定してつけることが出来ます。<br>
-（デフォルトはそれぞれ「<u>(続き) </u>」「<u> (続く)</u>」）
+先頭にリプライヘッダがある場合、分割された全ての本文部分にそれを付加します。
 </dd>
 </dl>
 </li>
@@ -66,26 +64,30 @@ bool <b>array_slide</b> ( array <i>&$array</i> , mixed <i>$key</i> , int <i>$amo
 <dt style="margin:10px;font-size:120%;">概要</dt>
 <dd>ツイート文字列にエンティティ情報を適用したものを返す</dd>
 <dt style="margin:10px;font-size:120%;">関数の仕様</dt>
-<dd>string <b>analyzeTweet</b> ( string <i>$text</i> , SimpleXMLElement <i>$entities</i> )</dd>
-<dt style="margin:10px;font-size:120%;">詳細</dt>
 <dd>
-ツイートのエンティティ情報を解析し、それにマッチした部分を指定の文字列に置換して返します<br>
-「指定の文字列」については、関数を直接編集してください。<br>
+<dl>
+<dt>RESTAPI Version 1.0</a></dt>
+<dd>
+string <b>analyzeEntities</b> ( string <i>$text</i> , SimpleXMLElement <i>$entities</i> )<br>
+</dd>
+<dt>RESTAPI Version 1.1 & SearchAPI</a></dt>
+<dd>
+string <b>analyzeSearchEntities</b> ( string <i>$text</i> , SimpleXMLElement <i>$entities</i> )<br>
 </dd>
 </dl>
-<div style="font-size:30px;color:red;">※重要　API Version 1.0 にのみ対応しています</div>
-</li>
-
+ツイートのエンティティ情報を解析し、それにマッチした部分を指定の文字列に置換して返します<br>
+「指定の文字列」については、関数を直接編集してください。
+</dd>
 
 <li style="margin-top:20px;">
 <span style="font-size:150%"><a href="http://github.com/Certainist/To_aru_Library/blob/master/explodeTweet.php">Virtual Form</a></span>
 <dl style="margin-top:15px;">
 <dt style="margin:10px;font-size:120%;">概要</dt>
-<dd>ツイートにエンティティ情報を適用し、それを返す</dd>
+<dd>JavaScriptを使い、aタグ形式でPOST可能なリンクを生成する</dd>
 <dt style="margin:10px;font-size:120%;">クラス・関数の仕様</dt>
 <dd>
 <i>$obj</i> = new <b>VirtualForm</b>;<br>
-echo <i>$obj</i>-><b>createLink</b> ( array <i>$data</i> , string <i>$caption</i> , string <i>$action</i> [ , string <i>$method = "POST"</i> [ , string <i>$target = "_self"</i> [ , string <i>$linkStyle</i> [ , string <i>$buttonStyle</i> [ , string <i>$q_replacement</i> ]]]]] );
+echo <i>$obj</i>-><b>createLink</b> ( array <i>$data</i> , string <i>$caption</i> , string <i>$action</i> [ , string <i>$method = "POST"</i> [ , string <i>$target = "_self"</i> [ , string <i>$linkStyle</i> [ , string <i>$buttonStyle</i> ]]]] );
 </dd>
 <dt style="margin:10px;font-size:120%;">詳細</dt>
 <dd>
