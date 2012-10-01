@@ -1,6 +1,6 @@
 <?php
 
-//■Analyze Entities Library Ver3.2.1■//
+//■Analyze Entities Library Ver3.3■//
 //
 //ツイートのエンティティ情報をもとに置換したりリンクを振ったり出来ます。
 //replace_str変数をご自身の開発されているアプリケーションに合わせて設定してください。
@@ -13,6 +13,9 @@
 //via.me用に設定必須
 define(VIA_ME_APP_KEY,"");
 
+//・Ver3.3
+//検索APIに対応・ソースコード整理
+//
 //・Ver3.2.1
 //<br>の置換タイミングに関するバグを修正
 //
@@ -44,12 +47,21 @@ define(VIA_ME_APP_KEY,"");
 //media_urlを展開するように修正
 //
 
+//RESTAPI Version 1.0
 function analyzeEntities($text,$entities) {
 
 	return analyzeEntitiesClass::analyze($text,$entities);
 
 }
 
+//Search API & RESTAPI Version 1.1
+function analyzeSearchEntities($text,$entities) {
+
+	return analyzeEntitiesClass::analyze($text,$entities,$mode=1);
+
+}
+
+//クラス
 class analyzeEntitiesClass {
 	
 	//UID取得
@@ -76,69 +88,74 @@ class analyzeEntitiesClass {
 		
 	}
 	
-	//解析
-	function analyze($text,$entities) {
+	
+	function analyze($text,$entities,$mode=0) {
 		
-		/* ["@attributes"]の["start"]の値を基準にソートする */
+		if ($mode==0) {
 		
-		if ($entities->user_mentions->user_mention) 
-		
-		foreach ($entities->user_mentions->user_mention as $user_mention) {
-		
-			//ソート用配列
-			$sort_arr[] = (int)$user_mention->attributes()->start;
+			/* ["@attributes"]の["start"]の値を基準にソートする */
 			
-			//typeエレメントを設定
-			$user_mention->analyzed_type = "user_mention";
+			if ($entities->user_mentions->user_mention) 
+			foreach ($entities->user_mentions->user_mention as $user_mention) {
+				$sort_arr[] = (int)$user_mention->attributes()->start;
+				$user_mention->analyzed_type = "user_mention";
+				$new_entities[] = $user_mention;
+			}
 			
-			//ソート先配列
-			$new_entities[] = $user_mention;
+			if ($entities->urls->url) 
+			foreach ($entities->urls->url as $url) {
+				$sort_arr[] = (int)$url->attributes()->start;
+				$url->analyzed_type = "url";
+				$new_entities[] = $url;
+				
+			}
 			
-		}
+			if ($entities->hashtags->hashtag) 
+			foreach ($entities->hashtags->hashtag as $hashtag) {
+				$sort_arr[] = (int)$hashtag->attributes()->start;
+				$hashtag->analyzed_type = "hashtag";
+				$new_entities[] = $hashtag;
+			}
+			
+			if ($entities->media->creative) 
+			foreach ($entities->media->creative as $creative) {
+				$sort_arr[] = (int)$creative->attributes()->start;
+				$creative->analyzed_type = "media";
+				$new_entities[] = $creative;
+			}
 		
-		if ($entities->urls->url) 
+		} else {
 		
-		foreach ($entities->urls->url as $url) {
+			/* ["indices"]の値を基準にソートする */
+			
+			if ($entities->user_mentions[0]) 
+			foreach ($entities->user_mentions as $user_mention) {
+				$sort_arr[] = (int)$user_mention->indices[0];
+				$user_mention->analyzed_type = "user_mention";
+				$new_entities[] = $user_mention;
+			}
+			
+			if ($entities->urls[0]) 
+			foreach ($entities->urls as $url) {
+				$sort_arr[] = (int)$url->indices[0];
+				$url->analyzed_type = "url";
+				$new_entities[] = $url;
+			}
+			
+			if ($entities->hashtags[0]) 
+			foreach ($entities->hashtags as $hashtag) {
+				$sort_arr[] = (int)$hashtag->indices[0];
+				$hashtag->analyzed_type = "hashtag";
+				$new_entities[] = $hashtag;
+			}
+			
+			if ($entities->media[0]) 
+			foreach ($entities->media as $creative) {
+				$sort_arr[] = (int)$creative->indices[0];
+				$creative->analyzed_type = "media";
+				$new_entities[] = $creative;
+			}
 		
-			//ソート用配列
-			$sort_arr[] = (int)$url->attributes()->start;
-			
-			//typeエレメントを設定
-			$url->analyzed_type = "url";
-			
-			//ソート先配列
-			$new_entities[] = $url;
-			
-		}
-		
-		if ($entities->hashtags->hashtag) 
-		
-		foreach ($entities->hashtags->hashtag as $hashtag) {
-		
-			//ソート用配列
-			$sort_arr[] = (int)$hashtag->attributes()->start;
-			
-			//typeエレメントを設定
-			$hashtag->analyzed_type = "hashtag";
-			
-			//ソート先配列
-			$new_entities[] = $hashtag;
-			
-		}
-		
-		if ($entities->media->creative) 
-		
-		foreach ($entities->media->creative as $creative) {
-		
-			//ソート用配列
-			$sort_arr[] = (int)$creative->attributes()->start;
-			
-			//typeエレメントを設定
-			$creative->analyzed_type = "creative";
-			
-			//ソート先配列
-			$new_entities[] = $creative;
-			
 		}
 		
 		//エンティティ情報が空の場合は改行変換のみで返す
@@ -151,18 +168,27 @@ class analyzeEntitiesClass {
 		//ソート処理
 		array_multisort($sort_arr,$new_entities);
 		
-		
 		/* 実際に置換していく */
 		
 		//1回置換するごとに起こる$posのズレに配慮(この計算を容易にするためにソートした)
 		$pos_lag = 0; 
 		
 		foreach ($new_entities as $entity) {
-		
-			$pos = $entity->attributes()->start;
-			$len = $entity->attributes()->end - $pos;
 			
-			//typeエレメントで場合分け
+			if (!$entity->indices) {
+			
+				//start,endのattributes系
+				$pos = $entity->attributes()->start;
+				$len = $entity->attributes()->end - $pos;
+				
+			} else {
+			
+				//indicesエレメント系
+				$pos = $entity->indices[0];
+				$len = $entity->indices[1] - $pos;
+				
+			}
+			
 			switch ($entity->analyzed_type) {
 			
 				case "user_mention":
@@ -170,8 +196,7 @@ class analyzeEntitiesClass {
 					/* メンションを置換するフォーマット */
 					
 					$replace_str = "<a href=\"person.php?guid=ON&person={$entity->screen_name}\">@{$entity->screen_name}</a>"; //この行を変更
-					$text = mb_substr($text,0,$pos+$pos_lag).$replace_str.mb_substr($text,$pos+$pos_lag+$len);
-					$pos_lag += mb_strlen($replace_str) - $len;
+					
 					break;
 					
 				case "url":
@@ -192,23 +217,19 @@ class analyzeEntitiesClass {
 					$replace_str = "<a href=\"{$entity->expanded_url}\">{$entity->display_url}</a>";
 					//////変更ブロックここまで
 					
-					$text = mb_substr($text,0,$pos+$pos_lag).$replace_str.mb_substr($text,$pos+$pos_lag+$len);
-					$pos_lag += mb_strlen($replace_str) - $len;
 					break;
 					
 				case "hashtag":
 				
 					/* ハッシュタグを置換するフォーマット */
 					
-					$replace_str = "<a href=\"\">#{$entity->text}</a>"; //この行を変更
+					$replace_str = "<a href=\"search.php?guid=ON&sq=".rawurlencode("#{$entity->text}")."\">#{$entity->text}</a>"; //この行を変更
 					
-				$text = mb_substr($text,0,$pos+$pos_lag).$replace_str.mb_substr($text,$pos+$pos_lag+$len);
-					$pos_lag += mb_strlen($replace_str) - $len;
 					break;
 					
-				case "creative":
+				case "media":
 				
-					/* クリエイティブ(画像等)を置換するフォーマット */
+					/* メディアを置換するフォーマット */
 					
 					//////変更ブロックここから
 					if (is_null(self::getUID())) $raw_url = $entity->media_url;
@@ -216,11 +237,15 @@ class analyzeEntitiesClass {
 					$replace_str = "<br><a href=\"{$raw_url}\"><img src=\"{$entity->media_url}:thumb\"></a><br>";
 					//////変更ブロックここまで
 					
-					$text = mb_substr($text,0,$pos+$pos_lag).$replace_str.mb_substr($text,$pos+$pos_lag+$len);
-					$pos_lag += mb_strlen($replace_str) - $len;
 					break;
 					
 			}
+			
+			//置換処理
+			$text = mb_substr($text,0,$pos+$pos_lag).$replace_str.mb_substr($text,$pos+$pos_lag+$len);
+			
+			//ズレを加算
+			$pos_lag += mb_strlen($replace_str) - $len;
 			
 		}
 		
