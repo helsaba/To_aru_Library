@@ -1,12 +1,16 @@
 <?
 
-//■Explode Tweet Library Ver1.3■//
+//■Explode Tweet Library Ver1.4■//
 //
 //ツイートを容易に分割することが出来ます。
 //140字毎にURLや英文節を壊さないように区切って分割します。
 //全てのURLはt.coに短縮されるため、20文字として扱われます。
 //先頭にリプライヘッダがある場合、分割された先頭以外のツイートにもそれを付加します。
 //
+///Ver1.4
+///・改行コードを全て\nに統一して計算するように変更
+///・接頭辞と接尾辞を自動で振り分けるように改善
+///
 ///Ver1.3.1
 ///・Ver1.3.0でのミスを修正
 ///
@@ -62,7 +66,7 @@ The government said Thursday the number of Americans making first-time claims fo
 
 EOD;
 
-var_dump(explodeTweet($text,"(cont..)","(..cont)"));
+var_dump(explodeTweet($text));
 
 
 ●実行結果↓
@@ -131,15 +135,24 @@ The government said Thursday the number of Americans making(..cont)"
 
 mb_internal_encoding('UTF-8');
 
-//簡易化関数($prefix,$suffixは最大10文字)
-function explodeTweet($str,$prefix="(続き) ",$suffix=" (続く)") {
+//メイン関数
+function explodeTweet($str) {
 	
+	//改行コードを\nに統一
+	$str = preg_replace("/\r\n/","\n",$str);
+	
+	//オブジェクト生成
 	$c = new explodeTweet_c($str);
+	
+	//接頭辞と接尾辞を決定
+	if (mb_strlen($str)!=strlen($str))
 	return $c->explodeTweet($prefix,$suffix);
+	else
+	return $c->explodeTweet("(cont..)","(..cont)");
 
 }
 
-//explodeTweet_cクラス
+//クラス
 class explodeTweet_c {
 	
 	//コンストラクタ
