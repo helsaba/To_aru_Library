@@ -1,12 +1,15 @@
 <?php
 
-//■Virtual Form Library Ver2.1■//
+//■Virtual Form Library Ver3.0■//
 //
 //簡単にaタグでPOSTが出来るリンクを張れます。
 //多次元配列に対応しています。
 //JavaScriptが使えない場合はSubmitボタンで表示します。
 //「postForm_1」「postForm_2」「postForm_3」…という風にフォームに名前をつけていくので、
 //これらと重複するフォームを作らないように注意してください。
+//
+//◆Ver3.0
+////・HTML特殊文字を置換せずに、エスケープされた表現で記述するように改良
 //
 //◆Ver2.1
 ////・半角スペースも置換対象に
@@ -73,12 +76,11 @@ Class VirtualForm {
 		
 	}
 	
-	//createLink(送信するデータ配列,キャプション,アクション[,メソッド[,ターゲット[,aタグのstyle属性の値[,noscript時のsubmitボタンのstyle属性の値[,シングル/ダブルクオーテーション、半角スペースの置換文字列]]]]])
-	function createLink($data,$caption,$action,$method="POST",$target="_self",$linkStyle="",$buttonStyle="",$q_replacement="_") {
+	//createLink(送信するデータ配列,キャプション,アクション[,メソッド[,ターゲット[,aタグのstyle属性の値]]])
+	function createLink($data,$caption,$action,$method="POST",$target="_self",$linkStyle="",$buttonStyle="") {
 	
 		if (!is_array($data)) return null;
 		
-		$this->replacement = $q_replacement;
 		$parsedArray = $this->arrayParse($data);
 		
 		$str = "";
@@ -116,27 +118,19 @@ Class VirtualForm {
 	
 	private function arrayParse($data) {
 		
-		$query = http_build_query($data);
-		$query = str_replace("&amp;","＆",$query);
+		$query = http_build_query($data,'','&',PHP_QUERY_RFC3986);
 		$array = explode("&",$query);
 		
 		$newArray = array();
 		
 		foreach ($array as $item) {
 		
-			$item = preg_replace("/＆/u","&",$item);
 			$item = explode("=",$item);
-			$newArray[$this->qReplace(urldecode($item[0]))] = $this->qReplace(urldecode($item[1]));
+			$newArray[htmlspecialchars(rawurldecode($item[0]),ENT_QUOTES)] = htmlspecialchars(rawurldecode($item[1]),ENT_QUOTES);
 			
 		}
 		
 		return $newArray;
-		
-	}
-	
-	private function qReplace($str) {
-		
-		return preg_replace("/\"|\'|\s/us",$this->replacement,$str);
 		
 	}
 
