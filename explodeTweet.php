@@ -1,12 +1,15 @@
 <?
 
-//■Explode Tweet Library Ver1.4■//
+//■Explode Tweet Library Ver1.4.1■//
 //
 //ツイートを容易に分割することが出来ます。
 //140字毎にURLや英文節を壊さないように区切って分割します。
 //全てのURLはt.coに短縮されるため、20文字として扱われます。
 //先頭にリプライヘッダがある場合、分割された先頭以外のツイートにもそれを付加します。
 //
+///Ver1.4.1
+///・makeNewArray関数を外部利用可能に
+///
 ///Ver1.4
 ///・改行コードを全て\nに統一して計算するように変更
 ///・接頭辞と接尾辞を自動で振り分けるように改善
@@ -32,7 +35,7 @@
 ///・array_splice2を削除（array_spliceで表現可能だった）
 //
 //
-//※arraySplit関数、mb_strrev関数、cutTweet関数は外部利用も可能です
+//※arraySplit関数(makeNewArray関数とセットで)、mb_strrev関数、cutTweet関数は外部利用も可能です
 //
 
 
@@ -331,7 +334,6 @@ class explodeTweet_c {
 		//まとめたものを返す
 		return $whole_tweets;
 		
-	
 	}
 	
 	//文字列を反転
@@ -412,7 +414,7 @@ class explodeTweet_c {
 	}
 	
 	//文字列から初期化された配列を作成
-	private function makeNewArray($str) {
+	function makeNewArray($str) {
 	
 		$array[0]["str"] = $str;
 		$array[0]["type"] = false;
