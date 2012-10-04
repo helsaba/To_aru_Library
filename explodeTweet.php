@@ -1,12 +1,15 @@
 <?
 
-//■Explode Tweet Library Ver1.4.1■//
+//■Explode Tweet Library Ver1.4.2■//
 //
 //ツイートを容易に分割することが出来ます。
 //140字毎にURLや英文節を壊さないように区切って分割します。
 //全てのURLはt.coに短縮されるため、20文字として扱われます。
 //先頭にリプライヘッダがある場合、分割された先頭以外のツイートにもそれを付加します。
 //
+///Ver1.4.2
+///・接頭辞と接尾辞の記述ミスを修正
+///
 ///Ver1.4.1
 ///・makeNewArray関数を外部利用可能に
 ///
@@ -149,7 +152,7 @@ function explodeTweet($str) {
 	
 	//接頭辞と接尾辞を決定
 	if (mb_strlen($str)!=strlen($str))
-	return $c->explodeTweet($prefix,$suffix);
+	return $c->explodeTweet("(続き) "," (続く)");
 	else
 	return $c->explodeTweet("(cont..)","(..cont)");
 
