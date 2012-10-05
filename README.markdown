@@ -65,16 +65,10 @@ bool <b>array_slide</b> ( array <i>&$array</i> , mixed <i>$key</i> , int <i>$amo
 <dd>ツイート文字列にエンティティ情報を適用したものを返す</dd>
 <dt style="margin:10px;font-size:120%;">関数の仕様</dt>
 <dd>
-<dl>
-<dt>RESTAPI Version 1.0</a></dt>
-<dd>
 string <b>analyzeEntities</b> ( string <i>$text</i> , SimpleXMLElement <i>$entities</i> )<br>
 </dd>
-<dt>RESTAPI Version 1.1 & SearchAPI</a></dt>
+<dt style="margin:10px;font-size:120%;">詳細</dt>
 <dd>
-string <b>analyzeSearchEntities</b> ( string <i>$text</i> , SimpleXMLElement <i>$entities</i> )<br>
-</dd>
-</dl>
 ツイートのエンティティ情報を解析し、それにマッチした部分を指定の文字列に置換して返します<br>
 「指定の文字列」については、関数を直接編集してください。
 </dd>
