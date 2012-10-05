@@ -1,6 +1,6 @@
 <?php
 
-//■Analyze Entities Library Ver3.3■//
+//■Analyze Entities Library Ver3.4■//
 //
 //ツイートのエンティティ情報をもとに置換したりリンクを振ったり出来ます。
 //replace_str変数をご自身の開発されているアプリケーションに合わせて設定してください。
@@ -13,6 +13,13 @@
 //via.me用に設定必須
 define(VIA_ME_APP_KEY,"");
 
+//・Ver3.4
+//ow.lyに関する不具合を修正
+//簡易化関数がAPIバージョンを自動判別するように改良
+//
+//・Ver3.3.1
+//「～のツイート」に置換する部分のpreg_matchに第3引数を渡していなかったのを修正
+//
 //・Ver3.3
 //検索APIに対応・ソースコード整理
 //
@@ -24,7 +31,6 @@ define(VIA_ME_APP_KEY,"");
 //
 //・Ver3.1.1
 //media_urlのバグを修正
-//
 //
 //・Ver3.1
 //media_urlを修正
@@ -47,17 +53,10 @@ define(VIA_ME_APP_KEY,"");
 //media_urlを展開するように修正
 //
 
-//RESTAPI Version 1.0
+//簡易化関数
 function analyzeEntities($text,$entities) {
-
+	
 	return analyzeEntitiesClass::analyze($text,$entities);
-
-}
-
-//Search API & RESTAPI Version 1.1
-function analyzeSearchEntities($text,$entities) {
-
-	return analyzeEntitiesClass::analyze($text,$entities,$mode=1);
 
 }
 
@@ -68,94 +67,82 @@ class analyzeEntitiesClass {
 	function getUID() {
 
 		//DoCoMo
-		if (isset($_SERVER['HTTP_X_DCMGUID'])) {
-			$mobile_id = $_SERVER['HTTP_X_DCMGUID'];
-		}
-		//au
-		else if (isset($_SERVER['HTTP_X_UP_SUBNO'])) {
-			$mobile_id = $_SERVER['HTTP_X_UP_SUBNO'];
-		}
-		//SoftBank
-		else if (isset($_SERVER['HTTP_X_JPHONE_UID'])) {
-			$mobile_id = $_SERVER['HTTP_X_JPHONE_UID'];
-		}
-		//PC
-		else {
-			return null;
-		}
+		if (isset($_SERVER['HTTP_X_DCMGUID']))
+		return $_SERVER['HTTP_X_DCMGUID'];
 		
-		return $mobile_id;
+		//au
+		if (isset($_SERVER['HTTP_X_UP_SUBNO']))
+		return $_SERVER['HTTP_X_UP_SUBNO'];
+		
+		//SoftBank
+		if (isset($_SERVER['HTTP_X_JPHONE_UID']))
+		return $_SERVER['HTTP_X_JPHONE_UID'];
+		
+		//PC
+		return null;
 		
 	}
 	
-	
-	function analyze($text,$entities,$mode=0) {
+	function analyze($text,$entities) {
 		
-		if ($mode==0) {
+		/* ["@attributes"]の["start"]の値を基準にソートする */
+			
+		if (strlen($entities->user_mentions->user_mention[0]->id)) 
+		foreach ($entities->user_mentions->user_mention as $user_mention) {
+			$sort_arr[] = (int)$user_mention->attributes()->start;
+			$user_mention->analyzed_type = "user_mention";
+			$new_entities[] = $user_mention;
+		}
 		
-			/* ["@attributes"]の["start"]の値を基準にソートする */
-			
-			if ($entities->user_mentions->user_mention) 
-			foreach ($entities->user_mentions->user_mention as $user_mention) {
-				$sort_arr[] = (int)$user_mention->attributes()->start;
-				$user_mention->analyzed_type = "user_mention";
-				$new_entities[] = $user_mention;
-			}
-			
-			if ($entities->urls->url) 
-			foreach ($entities->urls->url as $url) {
-				$sort_arr[] = (int)$url->attributes()->start;
-				$url->analyzed_type = "url";
-				$new_entities[] = $url;
-				
-			}
-			
-			if ($entities->hashtags->hashtag) 
-			foreach ($entities->hashtags->hashtag as $hashtag) {
-				$sort_arr[] = (int)$hashtag->attributes()->start;
-				$hashtag->analyzed_type = "hashtag";
-				$new_entities[] = $hashtag;
-			}
-			
-			if ($entities->media->creative) 
-			foreach ($entities->media->creative as $creative) {
-				$sort_arr[] = (int)$creative->attributes()->start;
-				$creative->analyzed_type = "media";
-				$new_entities[] = $creative;
-			}
+		if (strlen($entities->urls->url[0]->url)) 
+		foreach ($entities->urls->url as $url) {
+			$sort_arr[] = (int)$url->attributes()->start;
+			$url->analyzed_type = "url";
+			$new_entities[] = $url;	
+		}
 		
-		} else {
+		if (strlen($entities->hashtags->hashtag[0]->text)) 
+		foreach ($entities->hashtags->hashtag as $hashtag) {
+			$sort_arr[] = (int)$hashtag->attributes()->start;
+			$hashtag->analyzed_type = "hashtag";
+			$new_entities[] = $hashtag;
+		}
+			
+		if (strlen($entities->media->creative[0]->url)) 
+		foreach ($entities->media->creative as $creative) {
+			$sort_arr[] = (int)$creative->attributes()->start;
+			$creative->analyzed_type = "media";
+			$new_entities[] = $creative;
+		}
 		
-			/* ["indices"]の値を基準にソートする */
+		/* ["indices"]の値を基準にソートする */
 			
-			if ($entities->user_mentions[0]) 
-			foreach ($entities->user_mentions as $user_mention) {
-				$sort_arr[] = (int)$user_mention->indices[0];
-				$user_mention->analyzed_type = "user_mention";
-				$new_entities[] = $user_mention;
-			}
+		if (strlen($entities->user_mentions[0]->indices[0])) 
+		foreach ($entities->user_mentions as $user_mention) {
+			$sort_arr[] = (int)$user_mention->indices[0];
+			$user_mention->analyzed_type = "user_mention";
+			$new_entities[] = $user_mention;
+		}
 			
-			if ($entities->urls[0]) 
-			foreach ($entities->urls as $url) {
-				$sort_arr[] = (int)$url->indices[0];
-				$url->analyzed_type = "url";
-				$new_entities[] = $url;
-			}
+		if (strlen($entities->urls[0]->indices[0])) 
+		foreach ($entities->urls as $url) {
+			$sort_arr[] = (int)$url->indices[0];
+			$url->analyzed_type = "url";
+			$new_entities[] = $url;
+		}
 			
-			if ($entities->hashtags[0]) 
-			foreach ($entities->hashtags as $hashtag) {
-				$sort_arr[] = (int)$hashtag->indices[0];
-				$hashtag->analyzed_type = "hashtag";
-				$new_entities[] = $hashtag;
-			}
+		if (strlen($entities->hashtags[0]->indices[0])) 
+		foreach ($entities->hashtags as $hashtag) {
+			$sort_arr[] = (int)$hashtag->indices[0];
+			$hashtag->analyzed_type = "hashtag";
+			$new_entities[] = $hashtag;
+		}
 			
-			if ($entities->media[0]) 
-			foreach ($entities->media as $creative) {
-				$sort_arr[] = (int)$creative->indices[0];
-				$creative->analyzed_type = "media";
-				$new_entities[] = $creative;
-			}
-		
+		if (strlen($entities->media[0]->indices[0])) 
+		foreach ($entities->media as $media) {
+			$sort_arr[] = (int)$media->indices[0];
+			$media->analyzed_type = "media";
+			$new_entities[] = $media;
 		}
 		
 		//エンティティ情報が空の場合は改行変換のみで返す
@@ -175,7 +162,7 @@ class analyzeEntitiesClass {
 		
 		foreach ($new_entities as $entity) {
 			
-			if (!$entity->indices) {
+			if (!count($entity->indices)) {
 			
 				//start,endのattributes系
 				$pos = $entity->attributes()->start;
@@ -195,7 +182,9 @@ class analyzeEntitiesClass {
 				
 					/* メンションを置換するフォーマット */
 					
-					$replace_str = "<a href=\"person.php?guid=ON&person={$entity->screen_name}\">@{$entity->screen_name}</a>"; //この行を変更
+					//////変更ブロックここから
+					$replace_str = "<a href=\"person.php?guid=ON&person={$entity->screen_name}\">@{$entity->screen_name}</a>";
+					//////変更ブロックここまで
 					
 					break;
 					
@@ -205,14 +194,19 @@ class analyzeEntitiesClass {
 					
 					//////変更ブロックここから
 					$details = self::get_image_details($entity->expanded_url);
+					//YouTubeであった場合
 					if (!is_null($details['youtube'])) 
 					$replace_str = "<br><a href=\"{$details['youtube']}\"><img src=\"{$details['thumb']}\"></a><br>";
+					//画像があり且つガラケーであった場合
 					elseif (!is_null($details['thumb']) && !is_null(self::getUID()))
 					$replace_str = "<br><a href=\"http://web.fileseek.net/getimg.cgi?guid=ON&u=".rawurlencode($details['raw'])."\"><img src=\"{$details['thumb']}\"></a><br>";
+					//画像がありガラケーでない場合
 					elseif (!is_null($details['thumb']))
 					$replace_str = "<br><a href=\"{$entity->expanded_url}\"><img src=\"{$details['thumb']}\"></a><br>";
-					elseif (preg_match("#http://twitter\.com/([A-Za-z0-9_]{1,15})/status(es)?/(\d+)/?#",$entity->expanded_url))
+					//ツイートURLの正規表現に一致した場合
+					elseif (preg_match("#^https?://twitter\.com/([A-Za-z0-9_]{1,15})/status(es)?/(\d+)#",$entity->expanded_url,$matches))
 					$replace_str = "<a href=\"showTweet.php?guid=ON&id={$matches[3]}\" style=\"color:blue;\">{$matches[1]}のツイート</a>";
+					//その他
 					else
 					$replace_str = "<a href=\"{$entity->expanded_url}\">{$entity->display_url}</a>";
 					//////変更ブロックここまで
@@ -223,7 +217,9 @@ class analyzeEntitiesClass {
 				
 					/* ハッシュタグを置換するフォーマット */
 					
+					//////変更ブロックここから
 					$replace_str = "<a href=\"search.php?guid=ON&sq=".rawurlencode("#{$entity->text}")."\">#{$entity->text}</a>"; //この行を変更
+					//////変更ブロックここまで
 					
 					break;
 					
@@ -232,8 +228,7 @@ class analyzeEntitiesClass {
 					/* メディアを置換するフォーマット */
 					
 					//////変更ブロックここから
-					if (is_null(self::getUID())) $raw_url = $entity->media_url;
-					else $raw_url = "http://web.fileseek.net/getimg.cgi?guid=ON&u=".rawurlencode($entity->media_url);
+					$raw_url = (is_null(self::getUID())) ? $entity->media_url : "http://web.fileseek.net/getimg.cgi?guid=ON&u=".rawurlencode($entity->media_url);
 					$replace_str = "<br><a href=\"{$raw_url}\"><img src=\"{$entity->media_url}:thumb\"></a><br>";
 					//////変更ブロックここまで
 					
@@ -261,110 +256,108 @@ class analyzeEntitiesClass {
 	function get_image_details($url) {
 		
 		// twitpic
-		if (preg_match('/http:\/\/twitpic[.]com\/(\w+)/',$url,$matches)) {
+		if (preg_match('/^http:\/\/twitpic[.]com\/(\w+)$/',$url,$matches)) {
 			$img_thumb = 'http://twitpic.com/show/mini/'.$matches[1];
 			$img_raw = 'http://twitpic.com/show/full/'.$matches[1];
 		
 		// Mobypicture
-		} elseif (preg_match('/http:\/\/moby[.]to\/(\w+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/moby[.]to\/(\w+)$/',$url,$matches)) {
 			$img_thumb = 'http://moby.to/'.$matches[1].':thumbnail';
 			$img_raw = 'http://moby.to/'.$matches[1].':medium';
 		
 		// yFrog
-		} elseif (preg_match('/http:\/\/yfrog[.]com\/(\w+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/yfrog[.]com\/(\w+)$/',$url,$matches)) {
 			$img_thumb = 'http://yfrog.com/'.$matches[1].':small';
 			$img_raw = 'http://yfrog.com/'.$matches[1].':medium';
 		
 		// 携帯百景
-		} elseif (preg_match('/http:\/\/movapic[.]com\/pic\/(\w+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/movapic[.]com\/pic\/(\w+)$/',$url,$matches)) {
 			$img_thumb = 'http://image.movapic.com/pic/t_'.$matches[1].'.jpeg';
 			$img_raw = 'http://image.movapic.com/pic/s_'.$matches[1].'.jpeg';
 		
 		// はてなフォトライフ
-		} elseif (preg_match('/http:\/\/f[.]hatena[.]ne[.]jp\/(([\w\-])[\w\-]+)\/((\d{8})\d+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/f[.]hatena[.]ne[.]jp\/(([\w\-])[\w\-]+)\/((\d{8})\d+)$/',$url,$matches)) {
 			$img_thumb = 'http://img.f.hatena.ne.jp/images/fotolife/'.$matches[2].'/'.$matches[1].'/'.$matches[4].'/'.$matches[3].'_m.jpg';
 			$img_raw = 'http://img.f.hatena.ne.jp/images/fotolife/'.$matches[2].'/'.$matches[1].'/'.$matches[4].'/'.$matches[3].'.jpg';
 		
 		// PhotoShare1
-		} elseif (preg_match('/http:\/\/(?:www[.])?bcphotoshare[.]com\/photos\/\d+\/(\d+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/(?:www[.])?bcphotoshare[.]com\/photos\/\d+\/(\d+)$/',$url,$matches)) {
 			$img_thumb = 'http://images.bcphotoshare.com/storages/'.$matches[1].'/thumb68.jpg';
 			$img_raw = 'http://images.bcphotoshare.com/storages/'.$matches[1].'/large.jpg';
 		
 		// PhotoShare2
-		} elseif (preg_match('/http:\/\/bctiny[.]com\/p(\w+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/bctiny[.]com\/p(\w+)$/',$url,$matches)) {
 			
 			$img_thumb = 'http://images.bcphotoshare.com/storages/'.base_convert($matches[1],36,10).'/thumb68.jpg';
 			$img_raw = 'http://images.bcphotoshare.com/storages/'.base_convert($matches[1],36,10).'/large.jpg';
 		
 		// img.ly
-		} elseif (preg_match('/http:\/\/img[.]ly\/(\w+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/img[.]ly\/(\w+)$/',$url,$matches)) {
 			
 			$img_thumb = 'http://img.ly/show/thumb/'.$matches[1];
 			$img_raw = 'http://img.ly/show/full/'.$matches[1];
 		
 		// Twitgoo
-		} elseif (preg_match('/http:\/\/twitgoo[.]com\/(\w+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/twitgoo[.]com\/(\w+)$/',$url,$matches)) {
 		
 			$img_thumb = 'http://twitgoo.com/'.$matches[1].'/mini';
 			$img_raw = 'http://twitgoo.com/'.$matches[1].'/img';
 		
 		// youtube
-		} elseif (preg_match('/http:\/\/(?:www[.]youtube[.]com\/watch(?:\?|#!)v=|youtu[.]be\/)([\w\-]+)(?:[-_.!~*\'()a-zA-Z0-9;\/?:@&=+$,%#]*)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/(?:www[.]youtube[.]com\/watch(?:\?|#!)v=|youtu[.]be\/)([\w\-]+)(?:[-_.!~*\'()a-zA-Z0-9;\/?:@&=+$,%#]*)$/',$url,$matches)) {
 			
 			$img_thumb = 'http://i.ytimg.com/vi/'.$matches[1].'/default.jpg';
 			$img_raw = 'http://i.ytimg.com/vi/'.$matches[1].'/hqdefault.jpg';
 			$youtube = 'http://youtu.be/'.$matches[1];
 		
 		// imgur
-		} elseif (preg_match('/http:\/\/imgur[.]com\/(\w+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/imgur[.]com\/(\w+)$/',$url,$matches)) {
 		
 			$img_thumb = 'http://i.imgur.com/'.$matches[1].'s.jpg';
 			$img_raw = 'http://i.imgur.com/'.$matches[1].'.jpg';
 			
 		// TweetPhoto, Plixi, Lockerz
-		} elseif (preg_match('/http:\/\/tweetphoto[.]com\/\d+|http:\/\/plixi[.]com\/p\/\d+|http:\/\/lockerz[.]com\/s\/\d+/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/tweetphoto[.]com\/\d+|http:\/\/plixi[.]com\/p\/\d+|http:\/\/lockerz[.]com\/s\/\d+$/',$url,$matches)) {
 		
 			$img_thumb = 'http://api.plixi.com/api/TPAPI.svc/imagefromurl?size=thumbnail&url='.$matches[0];
 			$img_raw = 'http://api.plixi.com/api/TPAPI.svc/imagefromurl?size=big&url='.$matches[0];
 			
 		// Ow.ly
-		} elseif (preg_match('/http:\/\/ow[.]ly\/i\/(\w+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/ow[.]ly\/i\/(\w+)$/',$url,$matches)) {
 		
 			$img_thumb = 'http://static.ow.ly/photos/thumb/'.$matches[1].'.jpg';
+			
+			//原寸大画像がどの形式かを調べる
 			$ow_jpg = 'http://static.ow.ly/photos/original/'.$matches[1].'.jpg';
 			$ow_png = 'http://static.ow.ly/photos/original/'.$matches[1].'.png';
 			$ow_gif = 'http://static.ow.ly/photos/original/'.$matches[1].'.gif';
+			if (self::ow_exist($ow_jpg)) $img_raw = $ow_jpg;
+			elseif (self::ow_exist($ow_png)) $img_raw = $ow_png;
+			elseif (self::ow_exist($ow_gif)) $img_raw = $ow_gif;
 			
-			function ow_exist($ow_url) {
-				$ow_get = @simplexml_load_string(@file_get_contents($ow_url));
-				if ($ow_jpg===false) return true; else return false;
-			}
-			
-			if (ow_exist($ow_jpg)) $img_raw = $ow_jpg;
-			elseif (ow_exist($ow_png)) $img_raw = $ow_png;
-			elseif (ow_exist($ow_gif)) $img_raw = $ow_gif;
+			//該当しなければサムネイルを適用
 			else $img_raw = $img_thumb;
 		
 		// Instagram
-		} elseif (preg_match('/http:\/\/instagr[.]am\/p\/([\w\-]+)\//',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/instagr[.]am\/p\/([\w\-]+)\/$/',$url,$matches)) {
 			
 			$img_thumb = 'http://instagr.am/p/'.$matches[1].'/media/?size=t';
 			$img_raw = 'http://instagr.am/p/'.$matches[1].'/media/?size=l';
 			
 		// フォト蔵
-		} elseif (preg_match('/http:\/\/photozou[.]jp\/photo\/show\/\d+\/([\d]+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/photozou[.]jp\/photo\/show\/\d+\/([\d]+)$/',$url,$matches)) {
 		
 			$img_thumb = 'http://photozou.jp/p/thumb/'.$matches[1];
 			$img_raw = 'http://photozou.jp/p/img/'.$matches[1];
 		
 		// ついっぷるフォト
-		} elseif (preg_match('/http:\/\/p[.]twipple[.]jp\/([\w]+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/p[.]twipple[.]jp\/([\w]+)$/',$url,$matches)) {
 			
 			$img_thumb = 'http://p.twpl.jp/show/thumb/'.$matches[1];
 			$img_raw = 'http://p.twpl.jp/show/large/'.$matches[1];
 			
 		// via.me
-		} elseif (preg_match('/http:\/\/via[.]me\/-(\w+)/',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/via[.]me\/-(\w+)$/',$url,$matches)) {
 			
 			$request_url = 'http://api.via.me/v1/posts/'.$matches[1]."?client_id=".VIA_ME_APP_KEY;
 			$res = json_decode(@file_get_contents($request_url));
@@ -374,7 +367,7 @@ class analyzeEntitiesClass {
 			}
 		
 		//その他直接表示の画像
-		} elseif (preg_match('/http:\/\/.+?\.(jpg|png|gif|jpeg)/ui',$url,$matches)) {
+		} elseif (preg_match('/^http:\/\/.+?\.(jpg|png|gif|jpeg)$/ui',$url,$matches)) {
 			
 			$img_thumb = 'http://i.tinysrc.mobi/80/'.$matches[0];
 			$img_raw = $matches[0];
@@ -383,6 +376,12 @@ class analyzeEntitiesClass {
 		
 		return array('thumb'=>$img_thumb,'raw'=>$img_raw,'youtube'=>$youtube);
 		
+	}
+	
+	// ow.ly用
+	private function ow_exist($ow_url) {
+		$ow_get = @simplexml_load_string(@file_get_contents($ow_url));
+		if ($ow_get===false) return true; else return false;
 	}
 
 }
