@@ -1,12 +1,17 @@
 <?
 
-//■Explode Tweet Library Ver1.4.2■//
+//■Explode Tweet Library Ver1.5■//
 //
 //ツイートを容易に分割することが出来ます。
 //140字毎にURLや英文節を壊さないように区切って分割します。
 //全てのURLはt.coに短縮されるため、20文字として扱われます。
 //先頭にリプライヘッダがある場合、分割された先頭以外のツイートにもそれを付加します。
 //
+///Ver1.5
+///・全ての文節が収まりきる場合も接尾辞を足すとオーバーしてしまう場合に、
+///　次のツイートに持ち越すようになっていたバグを修正。
+///　収まりきることが確定した場合、そのまま最後まで文節を付加させるようにした。
+///
 ///Ver1.4.2
 ///・接頭辞と接尾辞の記述ミスを修正
 ///
@@ -148,7 +153,7 @@ function explodeTweet($str) {
 	$str = preg_replace("/\r\n/","\n",$str);
 	
 	//オブジェクト生成
-	$c = new explodeTweet_c($str);
+	$c = new explodeTweetClass($str);
 	
 	//接頭辞と接尾辞を決定
 	if (mb_strlen($str)!=strlen($str))
@@ -159,7 +164,7 @@ function explodeTweet($str) {
 }
 
 //クラス
-class explodeTweet_c {
+class explodeTweetClass {
 	
 	//コンストラクタ
 	function __construct($str) {
@@ -216,6 +221,9 @@ class explodeTweet_c {
 					$TweetLength = $headLength;
 					$in_process = true;
 					
+					//全て収まることが確定したかどうかを記録するフラグ
+					$this->go_in_flag = false;
+					
 					if ($child>0) {
 					
 						//先頭以外のchildにはprefixをつける
@@ -237,9 +245,20 @@ class explodeTweet_c {
 					
 						//既成の本文＋現文節の長さが140字以内の場合
 						
-						if ($TweetLength + $tempLength + $suffLength <= 140 || $tempTexts[$cnt+1]===NULL) {
+						if ($TweetLength + $tempLength + $suffLength <= 140) {
 						
-							//更にsuffixを付けても140字以内か次文節が無い場合
+							//更にsuffixを付けても140字以内の場合
+							
+							//現文節を追加
+							$Tweet[$parent][$child] .= $tempTexts[$cnt]["str"];
+							$TweetLength += $tempLength;
+							
+							//次文節に進む
+							$cnt++;
+							
+						} elseif ($this->go_in($tempTexts,$cnt,$TweetLength)) {
+						
+							//suffixを付けると140字を超えるが、収まりきることが確定している場合
 							
 							//現文節を追加
 							$Tweet[$parent][$child] .= $tempTexts[$cnt]["str"];
@@ -357,62 +376,6 @@ class explodeTweet_c {
 			$rev_str = preg_replace($rev_pattern,"",$rev_str,1,$count);
 			if ($count<1) return self::mb_strrev($rev_str);
 		}
-	
-	}
-	
-	//ヘッダーと本文を分割
-	private function splitHeader() {
-		
-		if (!preg_match("/^([\s　]*\.?[\s　]*)((@[A-Za-z0-9_]{1,15}[\s　]?)+)(.+)*/us",$this->tweet_in,$first_matches)) {
-		
-			//ヘッダーが見つからなければヘッダーと本文を初期化してfalseを返す
-			$this->headers[] = "";
-			$this->body = $this->tweet_in;
-			return false;
-		
-		} else {
-			
-			//ヘッダーが見つかれば本文を初期化、ヘッダーの1つ1つを取り出して次に進む
-			preg_match_all("/@[A-Za-z0-9_]{1,15}/us",$first_matches[2],$second_matches);
-			$headChar = $first_matches[1];
-			$headScreenNames = $second_matches[0];
-			$this->body = $first_matches[4];
-			
-		}
-		
-		$in_process=false;
-		$prev=false;
-		
-		//制限字数内でヘッダーを連結していく
-		for ($cnt=0;;$cnt++) {
-		
-			if (!$in_process) {
-				$temp = $headChar;
-				$in_process = true;
-			}
-			
-			$temp .= $headScreenNames[$cnt]." ";
-
-			if (mb_strlen($temp) > HEAD_MAX) {
-			
-				$this->headers[] = $prev;
-				$temp = "";
-				$in_process = false;
-				$cnt--;
-				
-			} elseif (!$headScreenNames[$cnt+1]) {
-			
-				$this->headers[] = $temp;
-				break;
-				
-			}
-			
-			$prev = $temp;
-			
-		}
-		
-		//trueを返す
-		return true;
 	
 	}
 	
@@ -536,6 +499,86 @@ class explodeTweet_c {
 		
 		//配列を返す
 		return $convertedArray;
+		
+	}
+	
+	//ヘッダーと本文を分割
+	private function splitHeader() {
+		
+		if (!preg_match("/^([\s　]*\.?[\s　]*)((@[A-Za-z0-9_]{1,15}[\s　]?)+)(.+)*/us",$this->tweet_in,$first_matches)) {
+		
+			//ヘッダーが見つからなければヘッダーと本文を初期化してfalseを返す
+			$this->headers[] = "";
+			$this->body = $this->tweet_in;
+			return false;
+		
+		} else {
+			
+			//ヘッダーが見つかれば本文を初期化、ヘッダーの1つ1つを取り出して次に進む
+			preg_match_all("/@[A-Za-z0-9_]{1,15}/us",$first_matches[2],$second_matches);
+			$headChar = $first_matches[1];
+			$headScreenNames = $second_matches[0];
+			$this->body = $first_matches[4];
+			
+		}
+		
+		$in_process = false;
+		$prev = false;
+		
+		//制限字数内でヘッダーを連結していく
+		for ($cnt=0;;$cnt++) {
+		
+			if (!$in_process) {
+				$temp = $headChar;
+				$in_process = true;
+			}
+			
+			$temp .= $headScreenNames[$cnt]." ";
+
+			if (mb_strlen($temp) > HEAD_MAX) {
+			
+				$this->headers[] = $prev;
+				$temp = "";
+				$in_process = false;
+				$cnt--;
+				
+			} elseif (!$headScreenNames[$cnt+1]) {
+			
+				$this->headers[] = $temp;
+				break;
+				
+			}
+			
+			$prev = $temp;
+			
+		}
+		
+		//trueを返す
+		return true;
+	
+	}
+	
+	//残りの文節の文字が収まりきるかどうかを判断
+	private function go_in($texts,$currentCnt,$currentLength) {
+		
+		//フラグが既に立っている場合はすぐtrueを返す
+		if ($this->go_in_flag==true) return true;
+		
+		//残っている文字数を計算
+		$count = count($texts);
+		$sum = 0;
+		for ($cnt=$currentCnt;$cnt<$count;$cnt++) {
+			$sum += ($texts[$cnt]['type']=='url') ? URL_MAX : mb_strlen($texts[$cnt]['str']);
+		}
+		
+		//140字以内に収まりきる場合はフラグを立て、trueを返す
+		if ($sum+$currentLength<=140) {
+			$this->go_in_flag==true;
+			return true;
+		}
+		
+		//それ以外はfalseを返す
+		return false;
 		
 	}
 	
