@@ -1,12 +1,15 @@
 <?
 
-//■Explode Tweet Library Ver1.5■//
+//■Explode Tweet Library Ver1.6■//
 //
 //ツイートを容易に分割することが出来ます。
 //140字毎にURLや英文節を壊さないように区切って分割します。
 //全てのURLはt.coに短縮されるため、20文字として扱われます。
 //先頭にリプライヘッダがある場合、分割された先頭以外のツイートにもそれを付加します。
 //
+///Ver1.6
+///・関数名など若干変更
+///
 ///Ver1.5
 ///・全ての文節が収まりきる場合も接尾辞を足すとオーバーしてしまう場合に、
 ///　次のツイートに持ち越すようになっていたバグを修正。
@@ -43,7 +46,6 @@
 ///・array_splice2を削除（array_spliceで表現可能だった）
 //
 //
-//※arraySplit関数(makeNewArray関数とセットで)、mb_strrev関数、cutTweet関数は外部利用も可能です
 //
 
 
@@ -190,8 +192,7 @@ class explodeTweetClass {
 		$whole_tweets = array();
 		
 		//文節配列作成
-		$texts = $this->makeNewArray($this->body);
-		$texts = $this->arraySplit($texts);
+		$texts = self::__toArray($this->body);
 		
 		$parent = 0;
 		$child = 0;
@@ -239,7 +240,7 @@ class explodeTweetClass {
 					//文節が無い場合は脱出
 					if ($tempTexts[$cnt]===NULL) break;
 
-					$tempLength = ($tempTexts[$cnt]["type"]=="url") ? URL_MAX : mb_strlen($tempTexts[$cnt]["str"]);
+					$tempLength = ($tempTexts[$cnt]['type']=='url') ? URL_MAX : mb_strlen($tempTexts[$cnt]['str']);
 					
 					if ($TweetLength + $tempLength <= 140) {
 					
@@ -250,7 +251,7 @@ class explodeTweetClass {
 							//更にsuffixを付けても140字以内の場合
 							
 							//現文節を追加
-							$Tweet[$parent][$child] .= $tempTexts[$cnt]["str"];
+							$Tweet[$parent][$child] .= $tempTexts[$cnt]['str'];
 							$TweetLength += $tempLength;
 							
 							//次文節に進む
@@ -261,7 +262,7 @@ class explodeTweetClass {
 							//suffixを付けると140字を超えるが、収まりきることが確定している場合
 							
 							//現文節を追加
-							$Tweet[$parent][$child] .= $tempTexts[$cnt]["str"];
+							$Tweet[$parent][$child] .= $tempTexts[$cnt]['str'];
 							$TweetLength += $tempLength;
 							
 							//次文節に進む
@@ -271,7 +272,7 @@ class explodeTweetClass {
 						
 							//次文節があり、suffixを付けると140字を超える場合
 							
-							if ($tempTexts[$cnt+1]["type"]=="url") {
+							if ($tempTexts[$cnt+1]['type']=='url') {
 							
 								//次文節がURLの場合はsuffixを付加
 								$Tweet[$parent][$child] .= $suffix;
@@ -284,8 +285,8 @@ class explodeTweetClass {
 							
 								//次々文節の有無に応じて、次文節が次child送りにした後140字以内に収まるか判定
 								
-								if ($tempTexts[$cnt+2]===NULL && $headLength + $prefLength + mb_strlen($tempTexts[$cnt+1]["str"]) <= 140 || 
-								    $headLength + $prefLength + mb_strlen($tempTexts[$cnt+1]["str"]) + $suffLength <= 140) {
+								if ($tempTexts[$cnt+2]===NULL && $headLength + $prefLength + mb_strlen($tempTexts[$cnt+1]['str']) <= 140 || 
+								    $headLength + $prefLength + mb_strlen($tempTexts[$cnt+1]['str']) + $suffLength <= 140) {
 								    	
 									//収まる場合
 									
@@ -302,10 +303,10 @@ class explodeTweetClass {
 									
 									//現文節を140字以内に収まる分だけカットして追加
 									$restLength = 140 - $TweetLength - $suffLength;
-									$Tweet[$parent][$child] .= mb_substr($tempTexts[$cnt]["str"],0,$restLength).$suffix;
+									$Tweet[$parent][$child] .= mb_substr($tempTexts[$cnt]['str'],0,$restLength).$suffix;
 									
 									//収まらなかった分を文節配列に挿入
-									array_splice($tempTexts,$cnt+1,0,array(array("str"=>mb_substr($tempTexts[$cnt]["str"],$restLength),"type"=>false)));
+									array_splice($tempTexts,$cnt+1,0,array(array('str'=>mb_substr($tempTexts[$cnt]['str'],$restLength),'type'=>false)));
 									
 									//次childに進む
 									$child++;
@@ -326,10 +327,10 @@ class explodeTweetClass {
 						
 						//現文節を140字以内に収まる分だけカットして追加
 						$restLength = 140 - $TweetLength - $suffLength;
-						$Tweet[$parent][$child] .= mb_substr($tempTexts[$cnt]["str"],0,$restLength).$suffix;
+						$Tweet[$parent][$child] .= mb_substr($tempTexts[$cnt]['str'],0,$restLength).$suffix;
 						
 						//収まらなかった分を文節配列に挿入
-						array_splice($tempTexts,$cnt+1,0,array(array("str"=>mb_substr($tempTexts[$cnt]["str"],$restLength),"type"=>false)));
+						array_splice($tempTexts,$cnt+1,0,array(array('str'=>mb_substr($tempTexts[$cnt]['str'],$restLength),'type'=>false)));
 						
 						//次childに進む
 						$child++;
@@ -379,17 +380,11 @@ class explodeTweetClass {
 	
 	}
 	
-	//文字列から初期化された配列を作成
-	function makeNewArray($str) {
-	
-		$array[0]["str"] = $str;
-		$array[0]["type"] = false;
-		return $array;
-	
-	}
-	
 	//配列に分割
-	function arraySplit($convertedArray) {
+	function __toArray($text) {
+	
+		$array[0]['str'] = $text;
+		$array[0]['type'] = false;
 	
 		/*URLで分割*/
 		
@@ -408,7 +403,7 @@ class explodeTweetClass {
 				"tr","tt","tv","tw","tz","ua","ug","uk","um","us","uy","uz","va","vc","ve","vg","vi","vn","vu","wf","ws","ye","yt","yu","za","zm","zr","zw");
 		
 		//パターン結合
-		$pattern1 = "(https?|ftp):\/\/([A-Za-z0-9]+\.)+(".implode("|",array_merge($gTLD,$ccTLD)).")(\/[^<>\"(){}\\^[\]`。、，”□△◎☆！？～＠\s　]*)?";
+		$pattern1 = "https?:\/\/([A-Za-z0-9]+\.)+(".implode("|",array_merge($gTLD,$ccTLD)).")(\/[^<>\"(){}\\^[\]`。、，”□△◎☆！？～＠\s　]*)?";
 		$pattern2 = "([A-Za-z0-9]+\.)+(".implode("|",$gTLD).")(\/[^<>\"(){}\\^[\]`。、，”□△◎☆！？～＠\s　]*)?";
 		$pattern3 = "([A-Za-z0-9]+\.){2,}(".implode("|",$ccTLD).")(\/[^<>\"(){}\\^[\]`。、，”□△◎☆！？～＠\s　]*)?";
 		$pattern = "/({$pattern1})|({$pattern2})|({$pattern3})/us";
@@ -416,21 +411,21 @@ class explodeTweetClass {
 		//URLを見つけて配列に区切って入れていく
 		while (true) {
 		
-			$temp_arr = array_pop($convertedArray);
+			$temp_arr = array_pop($array);
 			
-			if (preg_match($pattern,$temp_arr["str"],$matches)) {
+			if (preg_match($pattern,$temp_arr['str'],$matches)) {
 			
-				$url_pos = mb_strpos($temp_arr["str"],$matches[0]);
+				$url_pos = mb_strpos($temp_arr['str'],$matches[0]);
 				$url_len = mb_strlen($matches[0]);
 				$url_str = $matches[0];
-				$convertedArray[] = array("str"=>mb_substr($temp_arr["str"],0,$url_pos),"type"=>false);
-				$convertedArray[] = array("str"=>$url_str,"type"=>"url");
-				$convertedArray[] = array("str"=>mb_substr($temp_arr["str"],$url_pos+$url_len),"type"=>false);
+				$array[] = array('str'=>mb_substr($temp_arr['str'],0,$url_pos),'type'=>false);
+				$array[] = array('str'=>$url_str,'type'=>'url');
+				$array[] = array('str'=>mb_substr($temp_arr['str'],$url_pos+$url_len),'type'=>false);
 				continue;
 				
 			}
 			
-			$convertedArray[] = $temp_arr;
+			$array[] = $temp_arr;
 			break;
 			
 		}
@@ -438,15 +433,15 @@ class explodeTweetClass {
 		//前後関係からURLを再判定
 		$last_char = "";
 		
-		foreach ($convertedArray as &$array) {
+		foreach ($array as &$pair) {
 		
-			if ($array["type"]!="url") {
+			if ($pair['type']!='url') {
 			
-				$last_char = mb_substr($array["str"],mb_strlen($array["str"])-1);
+				$last_char = mb_substr($pair['str'],mb_strlen($pair['str'])-1);
 				
 			} else {
 			
-				if (preg_match("/[A-Za-z0-9]/u",$last_char)) $array["type"] = false;
+				if (preg_match("/[A-Za-z0-9]/u",$last_char)) $pair['type'] = false;
 				$last_char = "";
 				
 			}
@@ -457,35 +452,34 @@ class explodeTweetClass {
 		//パターン
 		$pattern = "/@[A-Za-z0-9_]{1,15}|[#♯][ー゛゜々ヾヽぁ-ヶ一-龠ａ-ｚＡ-Ｚ０-９a-zA-Z0-9_]{1,139}|[A-Za-z0-9\-_.,:;]{1,140}/us";
 		
-		
 		//実際に分割
 		$cnt=0;
 		
 		while (true) {
 		
-			$temp_arr = $convertedArray[$cnt];
+			$temp_arr = $array[$cnt];
 			
 			if ($temp_arr===NULL) break;
 			
-			//文節は無視
-			if ($temp_arr["type"]!==false) {
+			//URLは無視
+			if ($temp_arr['type']!==false) {
 			
 				$cnt++;
 				continue;
 				
 			}
 			
-			if (preg_match($pattern,$temp_arr["str"],$matches)) {
+			if (preg_match($pattern,$temp_arr['str'],$matches)) {
 			
-				$pos = mb_strpos($temp_arr["str"],$matches[0]);
+				$pos = mb_strpos($temp_arr['str'],$matches[0]);
 				$len = mb_strlen($matches[0]);
 				$str = $matches[0];
 			
-				array_splice($convertedArray,$cnt,1,
+				array_splice($array,$cnt,1,
 					array(
-						array("str"=>mb_substr($temp_arr["str"],0,$pos),"type"=>false),
-						array("str"=>$str,"type"=>"other"),
-						array("str"=>mb_substr($temp_arr["str"],$pos+$len),"type"=>false)
+						array('str'=>mb_substr($temp_arr['str'],0,$pos),'type'=>false),
+						array('str'=>$str,'type'=>'other'),
+						array('str'=>mb_substr($temp_arr['str'],$pos+$len),'type'=>false)
 					)
 				);
 				$cnt += 2;
@@ -498,7 +492,7 @@ class explodeTweetClass {
 		}
 		
 		//配列を返す
-		return $convertedArray;
+		return $array;
 		
 	}
 	
