@@ -149,7 +149,7 @@ The government said Thursday the number of Americans making(..cont)"
 mb_internal_encoding('UTF-8');
 
 //メイン関数
-function explodeTweet($str) {
+function explodeTweet($text) {
 	
 	//改行コードを\nに統一
 	$str = preg_replace("/\r\n/","\n",$str);

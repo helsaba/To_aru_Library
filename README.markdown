@@ -15,7 +15,7 @@
 長いツイートを最大で140字毎に、適当な部分で分割して配列で返す
 
 ### 関数の仕様
-array __explodeTweet__ ( string _$str_ )
+array __explodeTweet__ ( string _$text_ )
 
 ### 詳細
 ツイート本文を容易に分割することが出来ます。<br>
@@ -45,7 +45,7 @@ array __explodeTweet__ ( string _$str_ )
 
  bool __array\_slide__ ( array _&$array_ , mixed _$key_ , int _$amount_ [, bool _$search\_target\_with\_order = FALSE_ ] )
  
- 配列を<u>参照渡し</u>し、処理の結果を論理値で返します。
+ 配列を_参照渡し_し、処理の結果を論理値で返します。
 
 ## [Entify Text]<img src="http://ishisuke007.yh.land.to/push.png" style="vertical-align:bottom;" height="50">
 
@@ -60,7 +60,7 @@ Twitter上のあらゆるテキストをエンティティ化します。<br>
 _status_のようにエンティティ情報を持つものの場合、第2引数で渡すと、処理がより速く正確になります。<br>
 SimpleXMLElementと書いてはいますが、stdClassでも問題ないと思います（多分）。
 第3引数にTrueを指定すると、URLが多重短縮されていた場合最後まで解決を試みます。<br>
-<u>__置換されるaタグのhref属性の値などは自分専用になっているので、必ず編集してからお使いください。__</u>
+__置換されるaタグのhref属性の値などは自分専用になっているので、必ず編集してからお使いください。__
 
 ## [Virtual Form]
 
