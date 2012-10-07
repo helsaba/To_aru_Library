@@ -78,7 +78,7 @@ JavaScriptが使えない場合はSubmitボタンで表示します。<br>
 __「postForm_1」「postForm_2」「postForm_3」…__という風にフォームに名前をつけていくので、<br>
 これらと重複するフォームを作らないように注意してください。
 
-[ExplodeTweet]: https://github.com/Certainist/To_aru_Library/blob/master/explodeTweet.php
+[Explode Tweet]: https://github.com/Certainist/To_aru_Library/blob/master/explodeTweet.php
 [Version 1.0 系]: https://github.com/Certainist/To_aru_Library/blob/master/arraySlide-1.1.php
 [Version 2.0 系]: https://github.com/Certainist/To_aru_Library/blob/master/arraySlide-2.1.php
 [Entify Text]: https://github.com/Certainist/To_aru_Library/blob/master/entifyText.php
