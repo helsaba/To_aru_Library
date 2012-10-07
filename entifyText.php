@@ -1,6 +1,6 @@
 <?php
 
-//■Entify Text Library Ver1.0■//
+//■Entify Text Library Ver1.1■//
 //
 //Twitter上のあらゆるテキストを解析し、最適なHTMLを出力するためのライブラリです。
 //エンティティ情報がある場合はそれを忠実に再現し、
@@ -8,7 +8,9 @@
 //
 //置換するURL等が完全に自分用なので、ご自分の環境に合わせて編集し、ご利用ください。
 //
-//
+//●Ver1.1
+////・get_headers関数にエラー演算子を付加(適当なURLの場合も大丈夫なように)
+///
 //
 
 mb_internal_encoding('UTF-8');
@@ -397,7 +399,7 @@ class entifyTextClass {
 		return self::make_jump_url($url);
 		
 		//いずれにも一致しなかったときさらにヘッダー取得
-		$headers = get_headers($url);
+		$headers = @get_headers($url);
 		
 		//取得に失敗したら停止してクッションページ用URLを適用
 		if ($headers===false)
