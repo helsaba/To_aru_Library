@@ -9,7 +9,7 @@
 //置換するURL等が完全に自分用なので、ご自分の環境に合わせて編集し、ご利用ください。
 //
 //●Ver1.2
-////・クッションページリンクのスキーマを取るように改良
+////・クッションページリンクのスキーマを取れるように改良
 ///
 //●Ver1.1
 ////・get_headers関数にエラー演算子を付加(適当なURLの場合も大丈夫なように)
@@ -22,11 +22,11 @@ mb_internal_encoding('UTF-8');
 define(VIA_ME_APP_KEY,"");
 
 //簡易化関数
-function entify($text,$entities=NULL,$get_headers=false) {
+function entify($text,$entities=NULL,$get_headers=false,$remove_scheme=true) {
 	
 	if (!is_null($entities))
-	return entifyTextClass::entifyByEntities($text,$entities,$get_headers);
-	return entifyTextClass::entifyWithoutEntities($text);
+	return entifyTextClass::entifyByEntities($text,$entities,$get_headers,$remove_scheme);
+	return entifyTextClass::entifyWithoutEntities($text,$remove_scheme);
 	
 }
 
@@ -54,7 +54,7 @@ class entifyTextClass {
 	}
 	
 	//エンティティで解析
-	function entifyByEntities($text,$entities,$get_headers=false) {
+	function entifyByEntities($text,$entities,$get_headers=false,$remove_scheme=true) {
 		
 		/* ["@attributes"]の["start"]の値を基準にソートする */
 			
@@ -158,7 +158,7 @@ class entifyTextClass {
 				case "url":
 				
 					/* URLを置換する */
-					$replace_str = self::entify_url($entity->expanded_url,$get_headers);
+					$replace_str = self::entify_url($entity->expanded_url,$get_headers,$remove_scheme);
 					break;
 					
 				case "hashtag":
@@ -193,7 +193,7 @@ class entifyTextClass {
 	}
 	
 	//エンティティを使わずに解析
-	function entifyWithoutEntities($text) {
+	function entifyWithoutEntities($text,$remove_scheme=true) {
 		
 		//解析された配列に変換
 		$array = self::__toArray($text);
@@ -216,7 +216,7 @@ class entifyTextClass {
 				$parsed = parse_url($element['str']);
 				$parsed['scheme'] = ($parsed['scheme']) ? $parsed['scheme']."://" : "http://";
 				$url = $parsed['scheme'].$parsed['host'].$parsed['path'].$parsed['query'].$parsed['fragment'];
-				$new_text .= self::entify_url($url);
+				$new_text .= self::entify_url($url,$remove_scheme);
 				break;
 			
 			//スクリーンネーム
@@ -376,7 +376,7 @@ class entifyTextClass {
 	}
 	
 	//(短縮)URLを解析してHTMLエンティティを付加したものを返す
-	function entify_url($url,$get_headers=false){
+	function entify_url($url,$get_headers=false,$remove_scheme=true){
 		
 		//画像URLパターンと照合
 		$details = self::get_image_details($url);
@@ -399,14 +399,14 @@ class entifyTextClass {
 		
 		//ヘッダー取得が無効の場合停止してクッションページ用URLを適用
 		elseif ($get_headers===false)
-		return self::make_jump_url($url);
+		return self::make_jump_url($url,$remove_scheme);
 		
 		//いずれにも一致しなかったときさらにヘッダー取得
 		$headers = @get_headers($url);
 		
 		//取得に失敗したら停止してクッションページ用URLを適用
 		if ($headers===false)
-		return self::make_jump_url($url);
+		return self::make_jump_url($url,$remove_scheme);
 		
 		//逆順に並び替えてLocationがあれば再帰させる
 		$headers = array_reverse($headers);
@@ -416,15 +416,16 @@ class entifyTextClass {
 		}
 		
 		//それ以上Locationが見つからなくなったら停止してクッションページ用URLを適用
-		return self::make_jump_url($url);
+		return self::make_jump_url($url,$remove_scheme);
 		
 	}
 	
 	//URLクッションページ用
-	function make_jump_url($url) {
+	function make_jump_url($url,$remove_scheme=true) {
 		
-		$display_url = mb_strimwidth(preg_replace('@https?://@','',$url),0,35,"...");
 		$enc_url = rawurlencode(base64_encode($url));
+		if (!$remove_scheme) $url = preg_replace('@https?://@','',$url);
+		$display_url = mb_strimwidth($url,0,35,"...");
 		$back = rawurlencode(base64_encode(getenv('REQUEST_URI')));
 		return "<a href=\"jump.php?guid=ON&back={$back}&url={$enc_url}\">{$display_url}</a>";
 		
