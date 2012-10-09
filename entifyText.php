@@ -1,6 +1,6 @@
 <?php
 
-//■Entify Text Library Ver1.1■//
+//■Entify Text Library Ver1.2■//
 //
 //Twitter上のあらゆるテキストを解析し、最適なHTMLを出力するためのライブラリです。
 //エンティティ情報がある場合はそれを忠実に再現し、
@@ -8,6 +8,9 @@
 //
 //置換するURL等が完全に自分用なので、ご自分の環境に合わせて編集し、ご利用ください。
 //
+//●Ver1.2
+////・クッションページリンクのスキーマを取るように改良
+///
 //●Ver1.1
 ////・get_headers関数にエラー演算子を付加(適当なURLの場合も大丈夫なように)
 ///
@@ -420,7 +423,7 @@ class entifyTextClass {
 	//URLクッションページ用
 	function make_jump_url($url) {
 		
-		$display_url = mb_strimwidth($url,0,35,"...");
+		$display_url = mb_strimwidth(preg_replace('@https?://@','',$url),0,35,"...");
 		$enc_url = rawurlencode(base64_encode($url));
 		$back = rawurlencode(base64_encode(getenv('REQUEST_URI')));
 		return "<a href=\"jump.php?guid=ON&back={$back}&url={$enc_url}\">{$display_url}</a>";
