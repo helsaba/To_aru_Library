@@ -1,12 +1,15 @@
 <?php
 
-//■Entify Text Library Ver1.2■//
+//■Entify Text Library Ver1.2.1■//
 //
 //Twitter上のあらゆるテキストを解析し、最適なHTMLを出力するためのライブラリです。
 //エンティティ情報がある場合はそれを忠実に再現し、
 //無い場合はライブラリ側で解析します。
 //
 //置換するURL等が完全に自分用なので、ご自分の環境に合わせて編集し、ご利用ください。
+//
+//●Ver1.2.1
+////・スキーマを取る/取らないを指定できるように改良
 //
 //●Ver1.2
 ////・クッションページリンクのスキーマを取れるように改良
@@ -19,7 +22,7 @@
 mb_internal_encoding('UTF-8');
 
 //via.me用に設定必須
-define(VIA_ME_APP_KEY,"");
+define(VIA_ME_APP_KEY,"xu9axr8blxzmuyphd1uf4cjb");
 
 //簡易化関数
 function entify($text,$entities=NULL,$get_headers=false,$remove_scheme=true) {
@@ -216,7 +219,7 @@ class entifyTextClass {
 				$parsed = parse_url($element['str']);
 				$parsed['scheme'] = ($parsed['scheme']) ? $parsed['scheme']."://" : "http://";
 				$url = $parsed['scheme'].$parsed['host'].$parsed['path'].$parsed['query'].$parsed['fragment'];
-				$new_text .= self::entify_url($url,$remove_scheme);
+				$new_text .= self::entify_url($url,true,$remove_scheme);
 				break;
 			
 			//スクリーンネーム
@@ -412,7 +415,7 @@ class entifyTextClass {
 		$headers = array_reverse($headers);
 		foreach ($headers as $h) {
 			if (strpos($h,"Location: http")!==0) continue;
-			return self::entify_url(substr($h,10),true);
+			return self::entify_url(substr($h,10),true,$remove_scheme);
 		}
 		
 		//それ以上Locationが見つからなくなったら停止してクッションページ用URLを適用
@@ -424,7 +427,7 @@ class entifyTextClass {
 	function make_jump_url($url,$remove_scheme=true) {
 		
 		$enc_url = rawurlencode(base64_encode($url));
-		if (!$remove_scheme) $url = preg_replace('@https?://@','',$url);
+		if ($remove_scheme) $url = preg_replace('@https?://@','',$url);
 		$display_url = mb_strimwidth($url,0,35,"...");
 		$back = rawurlencode(base64_encode(getenv('REQUEST_URI')));
 		return "<a href=\"jump.php?guid=ON&back={$back}&url={$enc_url}\">{$display_url}</a>";
