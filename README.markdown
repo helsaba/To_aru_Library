@@ -53,13 +53,14 @@ array __explodeTweet__ ( string _$text_ )
 テキストをエンティティ化したものを返す
 
 ### 関数の仕様
-string __entify__ ( string _$text_ [, SimpleXMLElement _$entities = NULL_ [, bool _$get\_headers = FALSE_ ]] )
+string __entify__ ( string _$text_ [, SimpleXMLElement _$entities = NULL_ [, bool _$get\_headers = FALSE_ , bool _$remove\_scheme = TRUE_ ]]] )
 
 ### 詳細
 Twitter上のあらゆるテキストをエンティティ化します。<br>
 **status**のようにエンティティ情報を持つものの場合、第2引数で渡すと、処理がより速く正確になります。<br>
 SimpleXMLElementと書いてはいますが、stdClassでも問題ないと思います（多分）。
 第3引数にTrueを指定すると、URLが多重短縮されていた場合最後まで解決を試みます。<br>
+第3引数にFalseを指定すると、URLの頭のスキームを省略しません。<br>
 __置換されるaタグのhref属性の値などは自分専用になっているので、必ず編集してからお使いください。__
 
 ## [Virtual Form]
