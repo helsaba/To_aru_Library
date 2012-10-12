@@ -9,6 +9,21 @@
 
 # ライブラリ一覧
 
+## [BgOAuth]<img src="http://ishisuke007.yh.land.to/push.png" style="vertical-align:bottom;" height="50">
+
+### 概要
+OAuth認証をバックグラウンドで行う(XAuth認証を再現する)
+
+### クラス・関数の仕様
+_$app_ = new __BgOAuth__( string _$consumer\_key_, string _$consumer\_secret_ );<br>
+_$tokens_ = _$app_->__getTokens__ ( string _$username_, string _$password_ );
+
+### 詳細
+OAuth認証をバックグラウンドで行います。<br>
+成功すると、$tokens['access_token']・$tokens['access_token_secret']でアクセスできます。<br>
+失敗すると、エラー原因を表す文字列が返されます。<br>
+__※自己責任でお願いします__
+
 ## [Explode Tweet]<img src="http://ishisuke007.yh.land.to/push.png" style="vertical-align:bottom;" height="50">
 
 ### 概要
@@ -79,6 +94,7 @@ JavaScriptが使えない場合はSubmitボタンで表示します。<br>
 __「postForm_1」「postForm_2」「postForm_3」…__という風にフォームに名前をつけていくので、<br>
 これらと重複するフォームを作らないように注意してください。
 
+[BgOAuth]: https://github.com/Certainist/To_aru_Library/blob/master/BgOAuth.php
 [Explode Tweet]: https://github.com/Certainist/To_aru_Library/blob/master/explodeTweet.php
 [Version 1.0 系]: https://github.com/Certainist/To_aru_Library/blob/master/arraySlide-1.1.php
 [Version 2.0 系]: https://github.com/Certainist/To_aru_Library/blob/master/arraySlide-2.1.php
