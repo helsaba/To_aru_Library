@@ -20,7 +20,7 @@ _$tokens_ = _$app_->__getTokens__ ( string _$username_, string _$password_ );
 
 ### 詳細
 OAuth認証をバックグラウンドで行います。<br>
-成功すると、*$tokens['access\_token']*・*$tokens['access\_token\_secret']*でアクセスできます。<br>
+成功すると、*$tokens['access\_token']*・_$tokens['access\_token\_secret']_でアクセスできます。<br>
 失敗すると、エラー原因を表す文字列が返されます。<br>
 __※自己責任でお願いします__
 
