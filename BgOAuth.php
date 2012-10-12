@@ -1,7 +1,7 @@
 <?php
 
 //***********************************************
-//************ BgOAuth Version 1.0.1 ************
+//************* BgOAuth Version 1.1 *************
 //***********************************************
 //
 //　　　　　　　　　　　　　　作者: @To_aru_User
@@ -25,6 +25,9 @@
 //
 //
 //●更新履歴
+//
+// 1.1
+// ・PIN入力方式にも対応
 //
 // 1.0.1
 // ・Private宣言を忘れていたクラス内変数があったので修正
@@ -63,17 +66,14 @@ class BgOAuth {
 			return $this->error;
 		}
 		
-		$pattern = '@oauth_token=(\w+?)&oauth_verifier=(\w+?)"@';
+		$pattern = '@oauth_token=\w+?&oauth_verifier=(\w+?)"|<code>(\d+?)</code>@';
 		if (!preg_match($pattern,$response,$matches)) {
 			$this->error = 'oauth_verifierの取得に失敗しました';
 			return $this->error;
 		}
-		if ($matches[1]!=$this->oauth_token) {
-			$this->error = 'oauth_tokenが一致しませんでした';
-			return $this->error;
-		}
+		$verifier = (strlen($matches[1])) ? $matches[1] : $matches[2];
 		
-		$q = $this->getParameters($this->oauth_token,$matches[2],$this->oauth_token_secret,'oauth/access_token');
+		$q = $this->getParameters($this->oauth_token,$verifier,$this->oauth_token_secret,'oauth/access_token');
 		$response = $this->request('https://api.twitter.com/oauth/access_token?'.$q,'GET',array());
 		if ($response===false) {
 			$this->error = 'access_token生成時、サーバーから応答がありませんでした';
