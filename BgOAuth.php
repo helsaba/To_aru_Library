@@ -19,7 +19,7 @@
 // $password = 'fuga';
 //
 // $app = new BgOAuth($consumer_key,$consumer_secret);
-// $tokens = getToken($username,$password);
+// $tokens = $app->getToken($username,$password);
 //
 //成功すると、$tokens['access_token']・$tokens['access_token_secret']でアクセスできます。
 //失敗すると、エラー原因を表す文字列が返されます。
@@ -137,7 +137,7 @@ class BgOAuth {
 		}
 		$context['http']['content'] = $content;
 			
-		$response = file_get_contents($uri,false,stream_context_create($context));
+		$response = @file_get_contents($uri,false,stream_context_create($context));
 		if ($response===false) return false;
 		
 		foreach ($http_response_header as $r) {
