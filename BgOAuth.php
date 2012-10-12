@@ -1,7 +1,7 @@
 <?php
 
 //***********************************************
-//************* BgOAuth Version 1.0 *************
+//************ BgOAuth Version 1.0.1 ************
 //***********************************************
 //
 //　　　　　　　　　　　　　　作者: @To_aru_User
@@ -11,7 +11,7 @@
 //サーバーによっては正常に動作しないことがあります
 //
 //
-//使用例
+//●使用例
 //
 // $consumer_key = 'xxxxxxxxxxxxxxx';
 // $consumer_secret = 'yyyyyyyyyyyyyy';
@@ -21,15 +21,25 @@
 // $app = new BgOAuth($consumer_key,$consumer_secret);
 // $tokens = $app->getTokens($username,$password);
 //
-//成功すると、$tokens['access_token']・$tokens['access_token_secret']でアクセスできます。
-//失敗すると、エラー原因を表す文字列が返されます。
+// 成功すると、$tokens['access_token']・$tokens['access_token_secret']でアクセスできます。
+// 失敗すると、エラー原因を表す文字列が返されます。
+//
+//
+//●更新履歴
+//
+// 1.0.1
+// ・Private宣言を忘れていたクラス内変数があったので修正
+//
 //
 
 class BgOAuth {
 	
 	private $cookie;
-	private $boundary;
 	private $user_agent;
+	private $consumer_key;
+	private $consumer_secret;
+	private $oauth_token;
+	private $oauth_token_secret;
 	private $error;
 	
 	public function __construct($consumer_key,$consumer_secret) {
