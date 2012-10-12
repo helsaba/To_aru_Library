@@ -19,7 +19,7 @@
 // $password = 'fuga';
 //
 // $app = new BgOAuth($consumer_key,$consumer_secret);
-// $tokens = $app->getToken($username,$password);
+// $tokens = $app->getTokens($username,$password);
 //
 //成功すると、$tokens['access_token']・$tokens['access_token_secret']でアクセスできます。
 //失敗すると、エラー原因を表す文字列が返されます。
