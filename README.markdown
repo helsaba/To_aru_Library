@@ -15,7 +15,7 @@
 OAuth認証をバックグラウンドで行う(XAuth認証を再現する)
 
 ### クラス・関数の仕様
-_$app_ = new __BgOAuth__( string _$consumer\_key_, string _$consumer\_secret_ );<br>
+_$app_ = new __BgOAuth__ ( string _$consumer\_key_, string _$consumer\_secret_ );<br>
 _$tokens_ = _$app_->__getTokens__ ( string _$username_, string _$password_ );
 
 ### 詳細
