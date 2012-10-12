@@ -15,8 +15,8 @@
 OAuth”FØ‚ğƒoƒbƒNƒOƒ‰ƒEƒ“ƒh‚Ås‚¤(XAuth”FØ‚ğÄŒ»‚·‚é)
 
 ### ƒNƒ‰ƒXEŠÖ”‚Ìd—l
-     _$app_ = new __BgOAuth__( string _$consumer\_key_, string _$consumer\_secret_ );<br>
-     _$tokens_ = _$app_->__getTokens__ ( string _$username_, string _$password_ );
+_$app_ = new __BgOAuth__( string _$consumer\_key_, string _$consumer\_secret_ );<br>
+_$tokens_ = _$app_->__getTokens__ ( string _$username_, string _$password_ );
 
 ### Ú×
 OAuth”FØ‚ğƒoƒbƒNƒOƒ‰ƒEƒ“ƒh‚Ås‚¢‚Ü‚·B<br>
@@ -30,7 +30,7 @@ __¦©ŒÈÓ”C‚Å‚¨Šè‚¢‚µ‚Ü‚·__
 ’·‚¢ƒcƒC[ƒg‚ğÅ‘å‚Å140š–ˆ‚ÉA“K“–‚È•”•ª‚Å•ªŠ„‚µ‚Ä”z—ñ‚Å•Ô‚·
 
 ### ŠÖ”‚Ìd—l
-     array __explodeTweet__ ( string _$text_ )
+array __explodeTweet__ ( string _$text_ )
 
 ### Ú×
 ƒcƒC[ƒg–{•¶‚ğ—eˆÕ‚É•ªŠ„‚·‚é‚±‚Æ‚ªo—ˆ‚Ü‚·B<br>
@@ -51,14 +51,14 @@ __¦©ŒÈÓ”C‚Å‚¨Šè‚¢‚µ‚Ü‚·__
 ### ŠÖ”‚Ìd—l
 
 - [Version 1.0 Œn]
-
-     array __array\_slide__ ( array _$array_ , mixed _$key_ , int _$amount_ [, bool _$search\_target\_with\_order = FALSE_ ] )
+ 
+ array __array\_slide__ ( array _$array_ , mixed _$key_ , int _$amount_ [, bool _$search\_target\_with\_order = FALSE_ ] )
  
  ”z—ñ‚ğ’l“n‚µ‚µAˆ—‚³‚ê‚½”z—ñ‚ğ•Ô‚µ‚Ü‚·B
 
 - [Version 2.0 Œn]
-
-     bool __array\_slide__ ( array _&$array_ , mixed _$key_ , int _$amount_ [, bool _$search\_target\_with\_order = FALSE_ ] )
+ 
+ bool __array\_slide__ ( array _&$array_ , mixed _$key_ , int _$amount_ [, bool _$search\_target\_with\_order = FALSE_ ] )
  
  ”z—ñ‚ğQÆ“n‚µ‚µAˆ—‚ÌŒ‹‰Ê‚ğ˜_—’l‚Å•Ô‚µ‚Ü‚·B
 
@@ -68,7 +68,7 @@ __¦©ŒÈÓ”C‚Å‚¨Šè‚¢‚µ‚Ü‚·__
 ƒeƒLƒXƒg‚ğƒGƒ“ƒeƒBƒeƒB‰»‚µ‚½‚à‚Ì‚ğ•Ô‚·
 
 ### ŠÖ”‚Ìd—l
-     string __entify__ ( string _$text_ [, SimpleXMLElement _$entities = NULL_ [, bool _$get\_headers = FALSE_ , bool _$remove\_scheme = TRUE_ ]]] )
+string __entify__ ( string _$text_ [, SimpleXMLElement _$entities = NULL_ [, bool _$get\_headers = FALSE_ , bool _$remove\_scheme = TRUE_ ]]] )
 
 ### Ú×
 Twitterã‚Ì‚ ‚ç‚ä‚éƒeƒLƒXƒg‚ğƒGƒ“ƒeƒBƒeƒB‰»‚µ‚Ü‚·B<br>
@@ -84,8 +84,8 @@ __’uŠ·‚³‚ê‚éaƒ^ƒO‚Ìhref‘®«‚Ì’l‚È‚Ç‚Í©•ªê—p‚É‚È‚Á‚Ä‚¢‚é‚Ì‚ÅA•K‚¸•ÒW‚µ‚Ä‚©‚ç‚
 JavaScript‚ğg‚¢Aaƒ^ƒOŒ`®‚ÅPOST‰Â”\‚ÈƒŠƒ“ƒN‚ğ¶¬‚·‚é
 
 ### ƒNƒ‰ƒXEŠÖ”‚Ìd—l
-     _$obj_ = new __VirtualForm__;<br>
-     echo _$obj_->__createLink__ ( array _$data_ , string _$caption_ , string _$action_ [ , string _$method = "POST"_ [ , string _$target = "\_self"_ [ , string _$linkStyle_ [ , string _$buttonStyle_ ]]]] );
+_$obj_ = new __VirtualForm__;<br>
+echo _$obj_->__createLink__ ( array _$data_ , string _$caption_ , string _$action_ [ , string _$method = "POST"_ [ , string _$target = "\_self"_ [ , string _$linkStyle_ [ , string _$buttonStyle_ ]]]] );
 
 ### Ú×
 ŠÈ’P‚Éaƒ^ƒO‚ÅPOST‚ªo—ˆ‚éƒŠƒ“ƒN‚ğ’£‚ê‚Ü‚·B<br>
