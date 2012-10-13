@@ -62,16 +62,16 @@ array __explodeTweet__ ( string _$text_ )
  
  配列を参照渡しし、処理の結果を論理値で返します。
 
-## [Entify Text]<img src="http://ishisuke007.yh.land.to/push.png" style="vertical-align:bottom;" height="50">
+## [Linkify Text]<img src="http://ishisuke007.yh.land.to/push.png" style="vertical-align:bottom;" height="50">
 
 ### 概要
-テキストをエンティティ化したものを返す
+テキストを解析し、リンクを張ったものを返す
 
 ### 関数の仕様
-string __entify__ ( string _$text_ [, SimpleXMLElement _$entities = NULL_ [, bool _$get\_headers = FALSE_ , bool _$remove\_scheme = TRUE_ ]]] )
+string __linkify__ ( string _$text_ [, SimpleXMLElement _$entities = NULL_ [, bool _$get\_headers = FALSE_ , bool _$remove\_scheme = TRUE_ ]]] )
 
 ### 詳細
-Twitter上のあらゆるテキストをエンティティ化します。<br>
+Twitter上のあらゆるテキストに最適なリンクを張ります。<br>
 **status**のようにエンティティ情報を持つものの場合、第2引数で渡すと、処理がより速く正確になります。<br>
 SimpleXMLElementと書いてはいますが、stdClassでも問題ないと思います（多分）。<br>
 第3引数にTrueを指定すると、URLが多重短縮されていた場合最後まで解決を試みます。<br>
@@ -98,5 +98,5 @@ __「postForm_1」「postForm_2」「postForm_3」…__という風にフォームに名前をつけて
 [Explode Tweet]: https://github.com/Certainist/To_aru_Library/blob/master/explodeTweet.php
 [Version 1.0 系]: https://github.com/Certainist/To_aru_Library/blob/master/arraySlide-1.1.php
 [Version 2.0 系]: https://github.com/Certainist/To_aru_Library/blob/master/arraySlide-2.1.php
-[Entify Text]: https://github.com/Certainist/To_aru_Library/blob/master/entifyText.php
+[Linkify Text]: https://github.com/Certainist/To_aru_Library/blob/master/linkifyText.php
 [Virtual Form]: https://github.com/Certainist/To_aru_Library/blob/master/VirtualForm.php

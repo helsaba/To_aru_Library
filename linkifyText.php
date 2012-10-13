@@ -1,12 +1,15 @@
 <?php
 
-//■Entify Text Library Ver1.2.1■//
+//■Linkify Text Library Ver1.2.2■//
 //
-//Twitter上のあらゆるテキストを解析し、最適なHTMLを出力するためのライブラリです。
+//Twitter上のあらゆるテキストを解析し、最適にリンクを張ったHTMLを出力するためのライブラリです。
 //エンティティ情報がある場合はそれを忠実に再現し、
 //無い場合はライブラリ側で解析します。
 //
 //置換するURL等が完全に自分用なので、ご自分の環境に合わせて編集し、ご利用ください。
+//
+//●Ver1.2.2
+////・今さらながらEntifyよりLinkifyの方が名前的に合っていることに気づいたので修正
 //
 //●Ver1.2.1
 ////・スキームを取る/取らないを指定できるように改良
@@ -25,16 +28,16 @@ mb_internal_encoding('UTF-8');
 define(VIA_ME_APP_KEY,"xu9axr8blxzmuyphd1uf4cjb");
 
 //簡易化関数
-function entify($text,$entities=NULL,$get_headers=false,$remove_scheme=true) {
+function linkify($text,$entities=NULL,$get_headers=false,$remove_scheme=true) {
 	
 	if (!is_null($entities))
-	return entifyTextClass::entifyByEntities($text,$entities,$get_headers,$remove_scheme);
-	return entifyTextClass::entifyWithoutEntities($text,$remove_scheme);
+	return linkifyTextClass::linkifyByEntities($text,$entities,$get_headers,$remove_scheme);
+	return linkifyTextClass::linkifyWithoutEntities($text,$remove_scheme);
 	
 }
 
 //クラス
-class entifyTextClass {
+class linkifyTextClass {
 	
 	//UID取得
 	function getUID() {
@@ -57,7 +60,7 @@ class entifyTextClass {
 	}
 	
 	//エンティティで解析
-	function entifyByEntities($text,$entities,$get_headers=false,$remove_scheme=true) {
+	function linkifyByEntities($text,$entities,$get_headers=false,$remove_scheme=true) {
 		
 		/* ["@attributes"]の["start"]の値を基準にソートする */
 			
@@ -161,7 +164,7 @@ class entifyTextClass {
 				case "url":
 				
 					/* URLを置換する */
-					$replace_str = self::entify_url($entity->expanded_url,$get_headers,$remove_scheme);
+					$replace_str = self::linkify_url($entity->expanded_url,$get_headers,$remove_scheme);
 					break;
 					
 				case "hashtag":
@@ -196,7 +199,7 @@ class entifyTextClass {
 	}
 	
 	//エンティティを使わずに解析
-	function entifyWithoutEntities($text,$remove_scheme=true) {
+	function linkifyWithoutEntities($text,$remove_scheme=true) {
 		
 		//解析された配列に変換
 		$array = self::__toArray($text);
@@ -219,7 +222,7 @@ class entifyTextClass {
 				$parsed = parse_url($element['str']);
 				$parsed['scheme'] = ($parsed['scheme']) ? $parsed['scheme']."://" : "http://";
 				$url = $parsed['scheme'].$parsed['host'].$parsed['path'].$parsed['query'].$parsed['fragment'];
-				$new_text .= self::entify_url($url,true,$remove_scheme);
+				$new_text .= self::linkify_url($url,true,$remove_scheme);
 				break;
 			
 			//スクリーンネーム
@@ -379,7 +382,7 @@ class entifyTextClass {
 	}
 	
 	//(短縮)URLを解析してHTMLエンティティを付加したものを返す
-	function entify_url($url,$get_headers=false,$remove_scheme=true){
+	function linkify_url($url,$get_headers=false,$remove_scheme=true){
 		
 		//画像URLパターンと照合
 		$details = self::get_image_details($url);
@@ -415,7 +418,7 @@ class entifyTextClass {
 		$headers = array_reverse($headers);
 		foreach ($headers as $h) {
 			if (strpos($h,"Location: http")!==0) continue;
-			return self::entify_url(substr($h,10),true,$remove_scheme);
+			return self::linkify_url(substr($h,10),true,$remove_scheme);
 		}
 		
 		//それ以上Locationが見つからなくなったら停止してクッションページ用URLを適用
