@@ -1,12 +1,17 @@
-<?
+<?php
 
-//■Explode Tweet Library Ver1.6■//
+//■Explode Tweet Library Ver2.0■//
 //
 //ツイートを容易に分割することが出来ます。
 //140字毎にURLや英文節を壊さないように区切って分割します。
 //全てのURLはt.coに短縮されるため、20文字として扱われます。
 //先頭にリプライヘッダがある場合、分割された先頭以外のツイートにもそれを付加します。
 //
+////
+///Ver2.0
+///・DMヘッダーの分割対応
+///・140字以内にカットするときの精度を上げた
+///
 ///Ver1.6
 ///・関数名など若干変更
 ///
@@ -149,7 +154,7 @@ The government said Thursday the number of Americans making(..cont)"
 mb_internal_encoding('UTF-8');
 
 //メイン関数
-function explodeTweet($text) {
+function explodeTweet($str) {
 	
 	//改行コードを\nに統一
 	$str = preg_replace("/\r\n/","\n",$str);
@@ -185,8 +190,10 @@ class explodeTweetClass {
 		$suffLength = mb_strlen($suffix);
 		if ($prefLength>10 || $suffLength>10) return false;
 		
-		//ヘッダーが検出されず、かつRTフォーマットが見つかった場合はIDを中途半端に残さないように140字以内にカットして返す
-		if (!$this->splitHeader() && preg_match("/(QB|[A-Z]T)[\s　]*@[A-Za-z0-9_]{1,15}:/us",$this->tweet_in)) return array(self::cutTweet($this->tweet_in));
+		//DMかどうか判定
+		if (!$this->splitDMHeader())
+		//DMでなく、ヘッダーが検出されず、かつRTフォーマットが見つかった場合は適切に140字以内にカットして返す
+		if (!$this->splitHeader() && preg_match("/(QB|[A-Z]T)[\s　]*@[A-Za-z0-9_]{1,15}:/us",$this->tweet_in)) return array(self::__toStr140(self::__toArray($this->tweet_in)));
 		
 		//全てのツイートを一次配列化させるための変数
 		$whole_tweets = array();
@@ -204,7 +211,7 @@ class explodeTweetClass {
 			$tempTexts = $texts;
 
 			//ヘッダーの長さ
-			$headLength = mb_strlen($header);
+			$headLength = ($this->flag_dm) ? 0 : mb_strlen($header);
 			
 			//ツイートを作成
 			$cnt = 0;
@@ -359,33 +366,37 @@ class explodeTweetClass {
 		
 	}
 	
-	//文字列を反転
-	function mb_strrev($str) {
-	
-		 preg_match_all('/./us',$str,$arr);
-		 return implode(array_reverse($arr[0]));
-		 
-	}
-	
-	//IDを中途半端に残さないように140字以内にカットして返す
-	function cutTweet($tweet) {
+	//140字以内に適切にカットして返す
+	function __toStr140($array,$prev=null) {
 		
-		if (mb_strlen($tweet)<=140) return $tweet;
-		$rev_pattern = "/^[A-Za-z0-9_]{1,15}@/us";
-		$rev_str = self::mb_strrev(mb_substr($tweet,0,140));
-		while (true) {
-			$rev_str = preg_replace($rev_pattern,"",$rev_str,1,$count);
-			if ($count<1) return self::mb_strrev($rev_str);
+		$str = '';
+		$cnt = 0;
+		foreach ($array as $element) {
+			$str .= $element['str'];
+			$cnt += ($element['type']=='url') ? URL_MAX : mb_strlen($element['str']);
 		}
+		if ($cnt<=140) {
+			Switch ($prev['type']) {
+				case 'url': 
+				case 'screen_name':
+				case 'hashtag':
+					return $str;
+				default:
+					return $str.mb_substr($prev['str'],0,140-$cnt);
+			}
+		}
+		$prev = array_pop($array);
+		return self::__toStr140($array,$prev);
 	
 	}
 	
-	//配列に分割
+	//テキストを解析して成分ごとに分割して配列に格納
 	function __toArray($text) {
-	
+		
+		//配列を初期化
 		$array[0]['str'] = $text;
 		$array[0]['type'] = false;
-	
+		
 		/*URLで分割*/
 		
 		//gTLD
@@ -450,7 +461,7 @@ class explodeTweetClass {
 		/*ハッシュタグ・英単語で分割*/
 		
 		//パターン
-		$pattern = "/@[A-Za-z0-9_]{1,15}|[#♯][ー゛゜々ヾヽぁ-ヶ一-龠ａ-ｚＡ-Ｚ０-９a-zA-Z0-9_]{1,139}|[A-Za-z0-9\-_.,:;]{1,140}/us";
+		$pattern = "/(@[A-Za-z0-9_]{1,15})|([#♯][ー゛゜々ヾヽぁ-ヶ一-龠ａ-ｚＡ-Ｚ０-９a-zA-Z0-9_]{1,139})|([A-Za-z0-9\-_.,:;]{1,140})/us";
 		
 		//実際に分割
 		$cnt=0;
@@ -461,7 +472,7 @@ class explodeTweetClass {
 			
 			if ($temp_arr===NULL) break;
 			
-			//URLは無視
+			//無属性は無視
 			if ($temp_arr['type']!==false) {
 			
 				$cnt++;
@@ -474,11 +485,16 @@ class explodeTweetClass {
 				$pos = mb_strpos($temp_arr['str'],$matches[0]);
 				$len = mb_strlen($matches[0]);
 				$str = $matches[0];
-			
+				
+				//種類を判定
+				if ($matches[1]) $type = 'screen_name';
+				elseif ($matches[2]) $type = 'hashtag';
+				else $type = 'word';
+				
 				array_splice($array,$cnt,1,
 					array(
 						array('str'=>mb_substr($temp_arr['str'],0,$pos),'type'=>false),
-						array('str'=>$str,'type'=>'other'),
+						array('str'=>$str,'type'=>$type),
 						array('str'=>mb_substr($temp_arr['str'],$pos+$len),'type'=>false)
 					)
 				);
@@ -549,6 +565,20 @@ class explodeTweetClass {
 		
 		//trueを返す
 		return true;
+	
+	}
+	
+	//DM用
+	private function splitDMHeader() {
+		
+		if (preg_match("/^([\s\r\n]*?[DM]\s+[^\s\r\n]+[\s\r\n]+)(.+)/usi",$this->tweet_in,$matches)) {
+			$this->headers[] = $matches[1];
+			$this->body = $matches[2];
+			$this->flag_dm = true;
+			return true;
+		}
+		
+		return false;
 	
 	}
 	
